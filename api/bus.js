@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const stopId = process.env.METLINK_STOP_ID;
   const apiKey = process.env.METLINK_API_KEY;
   const label  = process.env.METLINK_STOP_LABEL || ('Stop ' + stopId);
@@ -27,22 +27,21 @@ export default async function handler(req, res) {
     let vehicles = [];
     if (vpRes.ok) {
       const vpData = await vpRes.json();
-      // GTFS-RT JSON shape: { entity: [{ vehicle: { trip, position, vehicle } }] }
       const entities = vpData.entity || vpData.Entities || [];
       vehicles = entities
         .filter(e => {
-          const routeId = e.vehicle?.trip?.route_id || e.vehicle?.trip?.routeId;
+          const routeId = e.vehicle && e.vehicle.trip && (e.vehicle.trip.route_id || e.vehicle.trip.routeId);
           return routeId && routeIds.has(routeId);
         })
         .map(e => {
           const v = e.vehicle;
           return {
-            id:        e.id,
-            route:     v.trip?.route_id || v.trip?.routeId || '?',
-            lat:       v.position?.latitude,
-            lng:       v.position?.longitude,
-            bearing:   v.position?.bearing ?? null,
-            headsign:  v.trip?.trip_headsign || null,
+            id:       e.id,
+            route:    (v.trip && (v.trip.route_id || v.trip.routeId)) || '?',
+            lat:      v.position && v.position.latitude,
+            lng:      v.position && v.position.longitude,
+            bearing:  v.position && v.position.bearing != null ? v.position.bearing : null,
+            headsign: (v.trip && v.trip.trip_headsign) || null,
           };
         })
         .filter(v => v.lat && v.lng);
@@ -50,6 +49,6 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ configured: true, stopId, label, data: depData, vehicles });
   } catch (e) {
-    return res.status(500).json({ configured: true, error: e.message });
+    return res.status(500).json({ configured: true, error: e.message, stack: e.stack });
   }
-}
+};
