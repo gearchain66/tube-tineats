@@ -1,7 +1,9 @@
 {
-  "regions": ["syd1"],
   "functions": {
-    "api/*.js": {
+    "api/bus.js": {
+      "maxDuration": 15
+    },
+    "api/recipe.js": {
       "maxDuration": 15
     }
   }
