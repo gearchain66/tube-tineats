@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dinner Planner</title>
+<title>Ruby's Recipes</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,11 +24,31 @@
   }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
   .container { width: 100%; max-width: 520px; }
-  h1 { font-size: 22px; font-weight: 600; margin-bottom: 0.2rem; }
-  .subtitle { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; }
+  .header-text h1 { font-size: 24px; font-weight: 700; line-height: 1; }
+
+  /* Cat */
+  .cat-wrap { flex-shrink: 0; }
+  .cat { width: 52px; height: 52px; position: relative; cursor: pointer; }
+  .cat svg { width: 52px; height: 52px; }
+  /* body bob */
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+  /* tail wag */
+  @keyframes wag { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(14deg)} }
+  /* eye blink */
+  @keyframes blink { 0%,90%,100%{transform:scaleY(1)} 95%{transform:scaleY(0.05)} }
+  /* ear twitch */
+  @keyframes eartwitch { 0%,80%,100%{transform:rotate(0deg)} 85%{transform:rotate(-8deg)} 90%{transform:rotate(4deg)} }
+  .cat-body-g { animation: bob 2s ease-in-out infinite; transform-origin: center bottom; }
+  .cat-tail { animation: wag 1.2s ease-in-out infinite; transform-origin: 2px 2px; }
+  .cat-eye-l, .cat-eye-r { animation: blink 4s ease-in-out infinite; transform-origin: center center; }
+  .cat-ear-l { animation: eartwitch 5s ease-in-out infinite; transform-origin: 8px 10px; }
+
   .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
   .tabs { display: flex; border-bottom: 0.5px solid var(--border); }
-  .tab { flex: 1; background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 6px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; margin-bottom: -0.5px; transition: color 0.15s, border-color 0.15s; }
+  .tab { flex: 1; background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 4px; font-size: 12px; font-weight: 500; color: var(--text2); cursor: pointer; margin-bottom: -0.5px; transition: color 0.15s, border-color 0.15s; }
   .tab.active { color: var(--text); border-bottom-color: var(--text); }
   .panel { display: none; padding: 1rem; }
   .panel.active { display: block; }
@@ -91,12 +111,67 @@
 </head>
 <body>
 <div class="container">
-  <h1>🍽 Dinner Planner</h1>
-  <p class="subtitle">Powered by RecipeTin Eats · Mon–Thu</p>
+
+  <div class="header">
+    <div class="cat-wrap">
+      <div class="cat" title="meow">
+        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- tail -->
+          <g class="cat-tail" style="transform:rotate(-10deg)" transform="translate(6,36)">
+            <path d="M2 2 Q-6 10 -4 18 Q-2 24 4 22" stroke="#b07d5a" stroke-width="3" stroke-linecap="round" fill="none"/>
+          </g>
+          <!-- body group bobs -->
+          <g class="cat-body-g">
+            <!-- body -->
+            <ellipse cx="26" cy="34" rx="14" ry="11" fill="#d4a96a"/>
+            <!-- belly -->
+            <ellipse cx="26" cy="36" rx="8" ry="7" fill="#f0d4a8"/>
+            <!-- head -->
+            <ellipse cx="26" cy="20" rx="12" ry="11" fill="#d4a96a"/>
+            <!-- ears -->
+            <g class="cat-ear-l">
+              <polygon points="14,12 10,2 20,10" fill="#d4a96a"/>
+              <polygon points="14.5,11 11.5,4 18,9.5" fill="#e8a0a0"/>
+            </g>
+            <polygon points="38,12 42,2 32,10" fill="#d4a96a"/>
+            <polygon points="37.5,11 40.5,4 34,9.5" fill="#e8a0a0"/>
+            <!-- eyes -->
+            <ellipse class="cat-eye-l" cx="21" cy="19" rx="2.5" ry="2.8" fill="#2a1a0a"/>
+            <ellipse class="cat-eye-r" cx="31" cy="19" rx="2.5" ry="2.8" fill="#2a1a0a"/>
+            <!-- eye shine -->
+            <circle cx="22" cy="18" r="0.9" fill="white"/>
+            <circle cx="32" cy="18" r="0.9" fill="white"/>
+            <!-- nose -->
+            <ellipse cx="26" cy="23" rx="1.5" ry="1" fill="#e88080"/>
+            <!-- mouth -->
+            <path d="M24 24.5 Q26 26.5 28 24.5" stroke="#b05050" stroke-width="0.8" stroke-linecap="round" fill="none"/>
+            <!-- whiskers -->
+            <line x1="14" y1="22" x2="22" y2="23" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
+            <line x1="14" y1="24" x2="22" y2="24" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
+            <line x1="38" y1="22" x2="30" y2="23" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
+            <line x1="38" y1="24" x2="30" y2="24" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
+            <!-- paws -->
+            <ellipse cx="16" cy="44" rx="5" ry="3.5" fill="#d4a96a"/>
+            <ellipse cx="36" cy="44" rx="5" ry="3.5" fill="#d4a96a"/>
+            <!-- paw toes -->
+            <ellipse cx="13" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
+            <ellipse cx="16" cy="46" rx="1.5" ry="1" fill="#c09050"/>
+            <ellipse cx="19" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
+            <ellipse cx="33" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
+            <ellipse cx="36" cy="46" rx="1.5" ry="1" fill="#c09050"/>
+            <ellipse cx="39" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="header-text">
+      <h1>Ruby's Recipes</h1>
+    </div>
+  </div>
 
   <div class="card">
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('week')">Mon–Thu</button>
+      <button class="tab active" onclick="switchTab('week')">Sun–Thu</button>
       <button class="tab" onclick="switchTab('tonight')">Tonight</button>
       <button class="tab" onclick="switchTab('meals')">My meals</button>
       <button class="tab" onclick="switchTab('history')">Recent</button>
@@ -109,7 +184,7 @@
       </div>
       <div id="week-grid"><div class="empty-state">Hit the button below to plan your week.</div></div>
       <div style="padding:0 1rem 1rem;">
-        <button class="primary generate-btn" onclick="planWeek()"><i class="ti ti-dice"></i> Generate Mon–Thu plan</button>
+        <button class="primary generate-btn" onclick="planWeek()"><i class="ti ti-dice"></i> Generate Sun–Thu plan</button>
       </div>
     </div>
 
@@ -156,7 +231,7 @@
 </div>
 
 <script>
-const DAYS = ['Monday','Tuesday','Wednesday','Thursday'];
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
 
 const DEFAULT_MEALS = [
   { name: 'Sweet and Sour Pork', url: 'https://www.recipetineats.com/sweet-and-sour-pork/' },
@@ -188,14 +263,14 @@ function loadMeals() {
 
 let meals = loadMeals();
 let history = (() => { try { return JSON.parse(localStorage.getItem('dp-history-v4') || '[]'); } catch(e) { return []; } })();
-let week = (() => { try { return JSON.parse(localStorage.getItem('dp-week-v4') || 'null'); } catch(e) { return null; } })();
+let week = (() => { try { return JSON.parse(localStorage.getItem('dp-week-v5') || 'null'); } catch(e) { return null; } })();
 let tonightPick = null;
 
 function save() {
   try {
     localStorage.setItem('dp-meals-v4', JSON.stringify(meals));
     localStorage.setItem('dp-history-v4', JSON.stringify(history));
-    localStorage.setItem('dp-week-v4', JSON.stringify(week));
+    localStorage.setItem('dp-week-v5', JSON.stringify(week));
   } catch(e) {}
 }
 
@@ -242,7 +317,7 @@ async function fetchSimplifiedRecipe(mealName, recipeUrl) {
       </div>`;
   } catch(e) {
     loading.style.display = 'none';
-    content.innerHTML = `<div class="recipe-error">Couldn't load recipe — <a href="${recipeUrl}" target="_blank" style="color:var(--info);">view on RecipeTin Eats ↗</a></div>`;
+    content.innerHTML = `<div class="recipe-error">Couldn't load recipe — <a href="${recipeUrl}" target="_blank" style="color:var(--info);">view full recipe ↗</a></div>`;
   }
 }
 
@@ -346,21 +421,18 @@ function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active', TABS[i]===name));
   TABS.forEach(id => {
     const el = document.getElementById('tab-'+id);
-    const isActive = id === name;
-    el.style.display = isActive ? 'block' : 'none';
-    if (isActive) el.classList.add('active'); else el.classList.remove('active');
+    el.style.display = id===name ? 'block' : 'none';
+    if (id===name) el.classList.add('active'); else el.classList.remove('active');
   });
   if (name==='week') renderWeek();
   if (name==='history') renderHistory();
   if (name==='tonight' && !tonightPick) pickTonight();
 }
 
-// init — show week tab
 save(); renderMeals(); renderWeek();
-document.getElementById('tab-week').style.display = 'block';
-document.getElementById('tab-tonight').style.display = 'none';
-document.getElementById('tab-meals').style.display = 'none';
-document.getElementById('tab-history').style.display = 'none';
+TABS.forEach(id => {
+  document.getElementById('tab-'+id).style.display = id==='week' ? 'block' : 'none';
+});
 </script>
 </body>
 </html>
