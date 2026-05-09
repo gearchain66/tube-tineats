@@ -1,22 +1,15 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-  if (!apiKey) {
-    return res.status(500).json({
-      error: 'API key not configured',
-      envKeys: Object.keys(process.env).filter(k => !k.includes('npm') && !k.includes('NODE')),
-    });
-  }
-
-  const { mealName } = req.body;
-  if (!mealName) return res.status(400).json({ error: 'mealName required' });
+  const mealName = req.body.meal || req.body.mealName;
+  if (!mealName) return res.status(400).json({ error: 'meal required' });
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -29,23 +22,30 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        system: `You are a recipe assistant. Given a recipe name, return ONLY a JSON object with this exact structure (no markdown, no backticks):
-{"serves":"2","time":"30 mins","ingredients":["500g chicken thigh, diced","2 tbsp soy sauce"],"steps":["Heat oil in pan over high heat.","Add chicken, cook 3 min."]}
-Keep steps short and action-focused. Max 8 steps. Return ONLY valid JSON.`,
+        system: `You are a recipe assistant. Given a recipe name, return ONLY a structured recipe as plain text with these exact sections:
+
+Serves: 2
+
+Ingredients
+- [qty] [unit] [ingredient]
+- ...
+
+Method
+1. [step]
+2. [step]
+...
+
+Keep steps short and action-focused. Max 8 steps. No markdown, no JSON, just plain text.`,
         messages: [{ role: 'user', content: `Recipe: ${mealName}` }],
       }),
     });
 
     const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(500).json({ error: 'Anthropic error', details: data });
-    }
+    if (!response.ok) return res.status(500).json({ error: 'Anthropic error', details: data });
 
     const text = data.content?.find(b => b.type === 'text')?.text || '';
-    const recipe = JSON.parse(text.replace(/```json|```/g, '').trim());
-    res.status(200).json(recipe);
+    res.status(200).json({ recipe: text });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-}
+};
