@@ -6,11 +6,17 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({
+      error: 'API key not configured',
+      envKeys: Object.keys(process.env).filter(k => !k.includes('npm') && !k.includes('NODE')),
+    });
+  }
+
   const { mealName } = req.body;
   if (!mealName) return res.status(400).json({ error: 'mealName required' });
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -31,10 +37,15 @@ Keep steps short and action-focused. Max 8 steps. Return ONLY valid JSON.`,
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(500).json({ error: 'Anthropic error', details: data });
+    }
+
     const text = data.content?.find(b => b.type === 'text')?.text || '';
     const recipe = JSON.parse(text.replace(/```json|```/g, '').trim());
     res.status(200).json(recipe);
   } catch (e) {
-    res.status(500).json({ error: 'Failed to fetch recipe' });
+    res.status(500).json({ error: e.message });
   }
 }
