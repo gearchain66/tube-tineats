@@ -1,5 +1,7 @@
 {
-  "rewrites": [
-    { "source": "/api/recipe", "destination": "/api/recipe.js" }
-  ]
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 15
+    }
+  }
 }
