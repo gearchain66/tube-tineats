@@ -1,10 +1,15 @@
-module.exports = async function handler(req, res) {
+// Edge runtime - runs closer to the user, different IP range than Lambda
+export const config = { runtime: 'edge' };
+
+export default async function handler(req) {
   const stopId = process.env.METLINK_STOP_ID;
   const apiKey = process.env.METLINK_API_KEY;
   const label  = process.env.METLINK_STOP_LABEL || ('Stop ' + stopId);
 
   if (!stopId || !apiKey) {
-    return res.status(200).json({ configured: false });
+    return new Response(JSON.stringify({ configured: false }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   const headers = { 'x-api-key': apiKey, 'Accept': 'application/json' };
@@ -45,8 +50,13 @@ module.exports = async function handler(req, res) {
         .filter(v => v.lat && v.lng);
     }
 
-    return res.status(200).json({ configured: true, stopId, label, data: depData, vehicles });
+    return new Response(JSON.stringify({ configured: true, stopId, label, data: depData, vehicles }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (e) {
-    return res.status(500).json({ configured: true, stopId, label, error: e.message });
+    return new Response(JSON.stringify({ configured: true, stopId, label, error: e.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-};
+}
