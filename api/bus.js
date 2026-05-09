@@ -8,33 +8,36 @@ module.exports = async function handler(req, res) {
   const label  = process.env.METLINK_STOP_LABEL || ('Stop ' + stopId);
   if (!stopId || !apiKey) return res.status(200).json({ configured: false });
 
+  // Metlink uses Azure API Management — try both common header names
+  const mlHeaders = {
+    'x-api-key': apiKey,
+    'Ocp-Apim-Subscription-Key': apiKey,
+    'Accept': 'application/json',
+  };
+
   try {
     const depRes = await fetch(
       `https://api.opendata.metlink.org.nz/v1/stop-predictions/${stopId}`,
-      { headers: { 'x-api-key': apiKey, 'Accept': 'application/json' } }
+      { headers: mlHeaders }
     );
 
     const rawText = await depRes.text();
 
-    // Return full debug info so we can see exactly what Metlink says
     if (!depRes.ok) {
       return res.status(200).json({
         configured: true, stopId, label,
         error: `Metlink returned ${depRes.status}`,
         metlinkResponse: rawText.slice(0, 500),
-        keyLength: apiKey.length,
-        keyStart: apiKey.slice(0, 6) + '...',
       });
     }
 
     const depData = JSON.parse(rawText);
 
-    // vehicle positions — best effort
     let vehicles = [];
     try {
       const vpRes = await fetch(
         'https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions',
-        { headers: { 'x-api-key': apiKey, 'Accept': 'application/json' } }
+        { headers: mlHeaders }
       );
       if (vpRes.ok) {
         const vpData = await vpRes.json();
