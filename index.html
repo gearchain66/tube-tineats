@@ -1033,15 +1033,17 @@ function renderDepartures(departures, list, updated, vehicles) {
     return;
   }
   list.innerHTML = departures.slice(0, 8).map(d => {
-    const dest     = d.destination?.name || d.trip?.trip_headsign || '—';
-    const route    = d.service_id || d.route_short_name || '?';
-    const aimed    = d.aimed_departure_time || d.departure?.aimed;
-    const expected = d.expected_departure_time || d.departure?.expected;
+    const dest     = d.destination?.name || d.trip_headsign || '—';
+    const route    = d.service_id || '?';
+    const aimed    = d.departure?.aimed;
+    const expected = d.departure?.expected;
     const useTime  = expected || aimed;
+    const cancelled = d.status === 'cancelled';
     let minsText = '—', statusClass = '';
-    if (useTime) {
+    if (cancelled) { minsText = 'Cancelled'; statusClass = 'bus-late'; }
+    else if (useTime) {
       const mins = Math.round((new Date(useTime) - Date.now()) / 60000);
-      if (mins <= 0)      { minsText = 'Due';        statusClass = 'bus-due'; }
+      if (mins <= 0)      { minsText = 'Due';    statusClass = 'bus-due'; }
       else if (mins === 1){ minsText = '1 min'; }
       else                { minsText = mins + ' min'; }
       if (expected && aimed) {
@@ -1049,8 +1051,8 @@ function renderDepartures(departures, list, updated, vehicles) {
         if (delay > 1) statusClass = 'bus-late';
       }
     }
-    const timeStr = useTime ? new Date(useTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
-    return `<div class="bus-row">
+    const timeStr = (!cancelled && useTime) ? new Date(useTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="bus-row" style="${cancelled ? 'opacity:0.45' : ''}">
       <span class="bus-route">${route}</span>
       <span class="bus-dest">${dest}</span>
       <div class="bus-time-col">
@@ -1079,21 +1081,16 @@ async function fetchDepartures() {
   loading.style.display = 'block';
   list.innerHTML = '';
 
-  const proxy = 'https://corsproxy.io/?';
   const mlHeaders = { 'x-api-key': busApiKey, 'Accept': 'application/json' };
 
   try {
     const [depRes, vpRes] = await Promise.all([
-      fetch(proxy + encodeURIComponent(`https://api.opendata.metlink.org.nz/v1/stop-predictions/${busStopId}`), { headers: mlHeaders }),
-      fetch(proxy + encodeURIComponent('https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions'), { headers: mlHeaders }),
+      fetch(`https://api.opendata.metlink.org.nz/v1/stop-predictions?stop_id=${busStopId}`, { headers: mlHeaders }),
+      fetch(`https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions`, { headers: mlHeaders }),
     ]);
 
     if (!depRes.ok) throw new Error('Metlink returned ' + depRes.status);
     const depData = await depRes.json();
-
-    if (depData.stop?.lat && depData.stop?.long) {
-      stopLatLng = [parseFloat(depData.stop.lat), parseFloat(depData.stop.long)];
-    }
 
     const routeIds = new Set((depData.departures || []).map(d => d.service_id).filter(Boolean));
     let vehicles = [];
