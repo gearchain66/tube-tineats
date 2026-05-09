@@ -983,10 +983,9 @@ async function fetchDepartures() {
   list.innerHTML = '';
 
   try {
-    const mlHeaders = { 'x-api-key': busApiKey, 'Accept': 'application/json' };
     const [depRes, vpRes] = await Promise.all([
-      fetch(`https://api.opendata.metlink.org.nz/v1/stop-predictions/${busStopId}`, { headers: mlHeaders }),
-      fetch(`https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions`, { headers: mlHeaders }),
+      fetch(`https://api.opendata.metlink.org.nz/v1/stop-predictions/${busStopId}?api_key=${busApiKey}`),
+      fetch(`https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions?api_key=${busApiKey}`),
     ]);
 
     if (!depRes.ok) throw new Error('Metlink returned ' + depRes.status);
