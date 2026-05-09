@@ -976,21 +976,50 @@ function renderDepartures(departures, list, updated, vehicles) {
 }
 
 async function fetchDepartures() {
+  if (!busApiKey || !busStopId) return;
   const loading = document.getElementById('bus-loading');
   const list    = document.getElementById('bus-list');
   const updated = document.getElementById('bus-updated');
   loading.style.display = 'block';
   list.innerHTML = '';
 
+  const proxy = 'https://corsproxy.io/?';
+  const mlHeaders = { 'x-api-key': busApiKey, 'Accept': 'application/json' };
+
   try {
-    const res  = await fetch(`${busApiBase}/api/bus`);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    if (json.data?.stop?.lat && json.data?.stop?.long) {
-      stopLatLng = [parseFloat(json.data.stop.lat), parseFloat(json.data.stop.long)];
+    const [depRes, vpRes] = await Promise.all([
+      fetch(proxy + encodeURIComponent(`https://api.opendata.metlink.org.nz/v1/stop-predictions/${busStopId}`), { headers: mlHeaders }),
+      fetch(proxy + encodeURIComponent('https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions'), { headers: mlHeaders }),
+    ]);
+
+    if (!depRes.ok) throw new Error('Metlink returned ' + depRes.status);
+    const depData = await depRes.json();
+
+    if (depData.stop?.lat && depData.stop?.long) {
+      stopLatLng = [parseFloat(depData.stop.lat), parseFloat(depData.stop.long)];
     }
-    renderDepartures(json.data?.departures || [], list, updated, json.vehicles || []);
+
+    const routeIds = new Set((depData.departures || []).map(d => d.service_id).filter(Boolean));
+    let vehicles = [];
+    if (vpRes.ok) {
+      const vpData = await vpRes.json();
+      vehicles = (vpData.entity || vpData.Entities || [])
+        .filter(e => {
+          const r = e.vehicle?.trip?.route_id || e.vehicle?.trip?.routeId;
+          return r && routeIds.has(r);
+        })
+        .map(e => ({
+          id:       e.id,
+          route:    e.vehicle.trip.route_id || e.vehicle.trip.routeId || '?',
+          lat:      e.vehicle.position?.latitude,
+          lng:      e.vehicle.position?.longitude,
+          bearing:  e.vehicle.position?.bearing || null,
+          headsign: e.vehicle.trip?.trip_headsign || null,
+        }))
+        .filter(v => v.lat && v.lng);
+    }
+
+    renderDepartures(depData.departures || [], list, updated, vehicles);
   } catch(e) {
     list.innerHTML = `<div class="empty" style="padding:1rem">Couldn't load departures.<br><small style="color:var(--text3)">${e.message}</small></div>`;
   } finally {
