@@ -812,7 +812,9 @@ let busMapOpen = false;
 let vehicleMarkers = [];
 let stopMarker = null;
 let lastVehicles = [];
-let stopLatLng = null; // set from stop-predictions response if available
+let stopLatLng = null;
+let busApiKey = '';
+let busStopId = ''; // set from stop-predictions response if available
 
 function toggleBusMap() {
   busMapOpen = !busMapOpen;
@@ -973,7 +975,7 @@ function renderDepartures(departures, list, updated, vehicles) {
 }
 
 async function fetchDepartures() {
-  if (!busBackendConfigured && !busApiKey) return;
+  if (!busApiKey || !busStopId) return;
   const loading = document.getElementById('bus-loading');
   const list    = document.getElementById('bus-list');
   const updated = document.getElementById('bus-updated');
@@ -981,14 +983,41 @@ async function fetchDepartures() {
   list.innerHTML = '';
 
   try {
-    const res  = await fetch('/api/bus');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
-    if (json.data?.stop?.lat && json.data?.stop?.long) {
-      stopLatLng = [parseFloat(json.data.stop.lat), parseFloat(json.data.stop.long)];
+    // Call Metlink directly from browser — pass API key as query param to avoid CORS preflight
+    const [depRes, vpRes] = await Promise.all([
+      fetch(`https://api.metlink.org.nz/api/v1/stop-predictions/${busStopId}?api_key=${busApiKey}`),
+      fetch(`https://api.metlink.org.nz/api/v1/gtfs-rt/vehiclepositions?api_key=${busApiKey}`),
+    ]);
+
+    if (!depRes.ok) throw new Error('Metlink returned ' + depRes.status);
+    const depData = await depRes.json();
+
+    if (depData.stop?.lat && depData.stop?.long) {
+      stopLatLng = [parseFloat(depData.stop.lat), parseFloat(depData.stop.long)];
     }
-    renderDepartures(json.data?.departures || [], list, updated, json.vehicles || []);
+
+    const routeIds = new Set((depData.departures || []).map(d => d.service_id).filter(Boolean));
+
+    let vehicles = [];
+    if (vpRes.ok) {
+      const vpData = await vpRes.json();
+      vehicles = (vpData.entity || vpData.Entities || [])
+        .filter(e => {
+          const r = e.vehicle?.trip?.route_id || e.vehicle?.trip?.routeId;
+          return r && routeIds.has(r);
+        })
+        .map(e => ({
+          id:       e.id,
+          route:    e.vehicle.trip.route_id || e.vehicle.trip.routeId || '?',
+          lat:      e.vehicle.position?.latitude,
+          lng:      e.vehicle.position?.longitude,
+          bearing:  e.vehicle.position?.bearing || null,
+          headsign: e.vehicle.trip?.trip_headsign || null,
+        }))
+        .filter(v => v.lat && v.lng);
+    }
+
+    renderDepartures(depData.departures || [], list, updated, vehicles);
   } catch(e) {
     list.innerHTML = `<div class="empty" style="padding:1rem">Couldn't load departures.<br><small style="color:var(--text3)">${e.message}</small></div>`;
   } finally {
@@ -997,18 +1026,18 @@ async function fetchDepartures() {
 }
 
 async function loadBusSettings() {
+  // Get config (key + stopId) from backend, then call Metlink directly from browser
   try {
     const res  = await fetch('/api/bus');
     const json = await res.json();
-    if (json.configured) {
+    if (json.configured && json.apiKey && json.stopId) {
       busBackendConfigured = true;
+      busApiKey = json.apiKey;
+      busStopId = json.stopId;
       setBusHeader(json.label || ('Stop ' + json.stopId), 'Stop ' + json.stopId);
       showBusDepartures();
       document.getElementById('bus-chevron').style.display = 'none';
-      if (json.data?.stop?.lat && json.data?.stop?.long) {
-        stopLatLng = [parseFloat(json.data.stop.lat), parseFloat(json.data.stop.long)];
-      }
-      renderDepartures(json.data?.departures || [], document.getElementById('bus-list'), document.getElementById('bus-updated'), json.vehicles || []);
+      fetchDepartures();
       return;
     }
   } catch { /* fall through */ }
