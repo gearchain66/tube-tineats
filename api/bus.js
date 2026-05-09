@@ -8,23 +8,37 @@ module.exports = async function handler(req, res) {
   const label  = process.env.METLINK_STOP_LABEL || ('Stop ' + stopId);
   if (!stopId || !apiKey) return res.status(200).json({ configured: false });
 
-  const headers = { 'x-api-key': apiKey, 'Accept': 'application/json' };
-
   try {
-    const [depRes, vpRes] = await Promise.all([
-      fetch(`https://api.opendata.metlink.org.nz/v1/stop-predictions/${stopId}`, { headers }),
-      fetch(`https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions`, { headers }),
-    ]);
+    const depRes = await fetch(
+      `https://api.opendata.metlink.org.nz/v1/stop-predictions/${stopId}`,
+      { headers: { 'x-api-key': apiKey, 'Accept': 'application/json' } }
+    );
 
-    if (!depRes.ok) throw new Error('Metlink returned ' + depRes.status);
-    const depData = await depRes.json();
+    const rawText = await depRes.text();
 
-    const routeIds = new Set((depData.departures || []).map(d => d.service_id).filter(Boolean));
+    // Return full debug info so we can see exactly what Metlink says
+    if (!depRes.ok) {
+      return res.status(200).json({
+        configured: true, stopId, label,
+        error: `Metlink returned ${depRes.status}`,
+        metlinkResponse: rawText.slice(0, 500),
+        keyLength: apiKey.length,
+        keyStart: apiKey.slice(0, 6) + '...',
+      });
+    }
 
+    const depData = JSON.parse(rawText);
+
+    // vehicle positions — best effort
     let vehicles = [];
     try {
+      const vpRes = await fetch(
+        'https://api.opendata.metlink.org.nz/v1/gtfs-rt/vehiclepositions',
+        { headers: { 'x-api-key': apiKey, 'Accept': 'application/json' } }
+      );
       if (vpRes.ok) {
         const vpData = await vpRes.json();
+        const routeIds = new Set((depData.departures || []).map(d => d.service_id).filter(Boolean));
         vehicles = (vpData.entity || vpData.Entities || [])
           .filter(e => {
             const r = e.vehicle?.trip?.route_id || e.vehicle?.trip?.routeId;
@@ -44,6 +58,6 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({ configured: true, stopId, label, data: depData, vehicles });
   } catch(e) {
-    return res.status(500).json({ configured: true, stopId, label, error: e.message });
+    return res.status(200).json({ configured: true, stopId, label, error: e.message });
   }
 };
