@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dinner Planner</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f7f7f5; --bg3: #f0efe9;
+    --text: #1a1a18; --text2: #6b6b67; --text3: #9f9f9b;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --info: #185fa5; --info-bg: #e6f1fb;
+    --radius-md: 8px; --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --bg2: #252522; --bg3: #2e2e2b;
+      --text: #f0efe9; --text2: #a8a8a4; --text3: #6b6b67;
+      --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
+      --info: #b5d4f4; --info-bg: #0c447c;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
+  .container { width: 100%; max-width: 520px; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 0.2rem; }
+  .subtitle { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
+  .tabs { display: flex; border-bottom: 0.5px solid var(--border); }
+  .tab { flex: 1; background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 6px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; margin-bottom: -0.5px; transition: color 0.15s, border-color 0.15s; }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); }
+  .panel { display: none; padding: 1rem; }
+  .panel.active { display: block; }
+  .panel-flush { display: none; }
+  .panel-flush.active { display: block; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+  .section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .text-btn { background: none; border: none; font-size: 12px; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 0; }
+  .text-btn:hover { color: var(--text); }
+  .meal-list { display: flex; flex-direction: column; gap: 5px; }
+  .meal-row { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 9px 12px; display: flex; align-items: center; gap: 8px; }
+  .meal-name { flex: 1; font-size: 13px; color: var(--text); }
+  .meal-link { font-size: 12px; color: var(--info); text-decoration: none; flex-shrink: 0; }
+  .meal-link:hover { text-decoration: underline; }
+  .meal-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 15px; padding: 0; flex-shrink: 0; display: flex; align-items: center; }
+  .meal-del:hover { color: #e24b4a; }
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; background: #FAEEDA; color: #633806; }
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
+  .add-row input { flex: 1; font-size: 13px; padding: 0 12px; height: 36px; border: 0.5px solid var(--border2); border-radius: var(--radius-md); background: var(--bg); color: var(--text); outline: none; }
+  .add-row input:focus { border-color: var(--text2); }
+  button.primary { background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-md); padding: 0 16px; height: 36px; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
+  button.primary:hover { opacity: 0.85; }
+  button.outline { background: none; color: var(--text); border: 0.5px solid var(--border2); border-radius: var(--radius-md); padding: 0 16px; height: 36px; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
+  button.outline:hover { background: var(--bg2); }
+  .week-header { padding: 12px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .day-row { padding: 11px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid var(--border); }
+  .day-row:last-child { border-bottom: none; }
+  .day-label { font-size: 12px; font-weight: 600; color: var(--text2); min-width: 38px; }
+  .day-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .day-meal { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day-meal.empty { color: var(--text3); font-style: italic; }
+  .day-recipe-link { font-size: 11px; color: var(--info); text-decoration: none; }
+  .day-recipe-link:hover { text-decoration: underline; }
+  .day-reroll { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 17px; padding: 2px; flex-shrink: 0; display: flex; align-items: center; }
+  .day-reroll:hover { color: var(--text); }
+  .generate-btn { width: 100%; height: 44px; font-size: 15px; margin-top: 12px; border-radius: var(--radius-lg); justify-content: center; }
+  .tonight-header { padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border); }
+  .tonight-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .tonight-name { font-size: 18px; font-weight: 600; color: var(--text); }
+  .tonight-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .recipe-body { padding: 1rem 1.25rem; }
+  .recipe-loading { text-align: center; padding: 1.5rem; color: var(--text2); font-size: 13px; }
+  .recipe-meta { display: flex; gap: 16px; margin-bottom: 1rem; }
+  .recipe-meta span { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 4px; }
+  .recipe-section { margin-bottom: 1.25rem; }
+  .recipe-section:last-child { margin-bottom: 0; }
+  .recipe-section-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  .ingredient-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .ingredient-list li { font-size: 13px; color: var(--text); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
+  .ingredient-list li::before { content: '·'; color: var(--text3); flex-shrink: 0; }
+  .step-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .step-list li { font-size: 13px; color: var(--text); display: flex; gap: 10px; line-height: 1.5; }
+  .step-num { font-size: 11px; font-weight: 600; background: var(--bg2); color: var(--text2); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .recipe-error { font-size: 13px; color: var(--text2); padding: 1rem; text-align: center; }
+  .history-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .history-row:last-child { border-bottom: none; }
+  .history-date { color: var(--text2); min-width: 90px; font-size: 12px; }
+  .empty-state { text-align: center; padding: 2rem; color: var(--text3); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🍽 Dinner Planner</h1>
+  <p class="subtitle">Powered by RecipeTin Eats · Mon–Thu</p>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('week')">Mon–Thu</button>
+      <button class="tab" onclick="switchTab('tonight')">Tonight</button>
+      <button class="tab" onclick="switchTab('meals')">My meals</button>
+      <button class="tab" onclick="switchTab('history')">Recent</button>
+    </div>
+
+    <div id="tab-week" class="panel-flush active">
+      <div class="week-header">
+        <span class="section-title">This week's dinners</span>
+        <span style="font-size:12px; color:var(--text3);">tap <i class="ti ti-refresh"></i> to swap</span>
+      </div>
+      <div id="week-grid"><div class="empty-state">Hit the button below to plan your week.</div></div>
+      <div style="padding:0 1rem 1rem;">
+        <button class="primary generate-btn" onclick="planWeek()"><i class="ti ti-dice"></i> Generate Mon–Thu plan</button>
+      </div>
+    </div>
+
+    <div id="tab-tonight" class="panel-flush">
+      <div class="tonight-header">
+        <div class="tonight-meta">
+          <div>
+            <p style="font-size:12px; color:var(--text2); margin-bottom:3px;">Tonight's dinner</p>
+            <div class="tonight-name" id="tonight-name">—</div>
+          </div>
+          <a id="tonight-ext-link" href="#" target="_blank" style="font-size:12px; color:var(--info); text-decoration:none; display:none; flex-shrink:0; margin-top:4px;"><i class="ti ti-external-link"></i> Full recipe</a>
+        </div>
+        <div class="tonight-actions">
+          <button class="outline" onclick="pickTonight()"><i class="ti ti-refresh"></i> Pick for me</button>
+          <button class="primary" id="confirm-btn" onclick="confirmTonight()" style="display:none;"><i class="ti ti-check"></i> Log it</button>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="recipe-loading" id="recipe-loading" style="display:none;"><i class="ti ti-loader"></i> Getting recipe...</div>
+        <div id="recipe-content"><p style="font-size:13px; color:var(--text3); text-align:center; padding:1rem 0;">Pick a meal to see the recipe</p></div>
+      </div>
+    </div>
+
+    <div id="tab-meals" class="panel">
+      <div class="section-header">
+        <span class="section-title">Meal list (<span id="meal-count">0</span>)</span>
+        <button class="text-btn" onclick="resetMeals()"><i class="ti ti-refresh"></i> Reset</button>
+      </div>
+      <div class="meal-list" id="meal-list"><div class="empty-state" id="meals-empty">No meals yet.</div></div>
+      <div class="add-row">
+        <input type="text" id="meal-input" placeholder="Add your own meal..." onkeydown="if(event.key==='Enter') addMeal()" />
+        <button class="primary" onclick="addMeal()"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>
+
+    <div id="tab-history" class="panel">
+      <div class="section-header">
+        <span class="section-title">Recently made</span>
+        <button class="text-btn" onclick="clearHistory()">Clear</button>
+      </div>
+      <div id="history-list"><div class="empty-state">No history yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday'];
+
+const DEFAULT_MEALS = [
+  { name: 'Sweet and Sour Pork', url: 'https://www.recipetineats.com/sweet-and-sour-pork/' },
+  { name: 'Thai Cashew Chicken Stir Fry', url: 'https://www.recipetineats.com/thai-cashew-chicken-stir-fry/' },
+  { name: 'One Pot Pasta Bolognese', url: 'https://www.recipetineats.com/one-pot-pasta-bolognese/' },
+  { name: 'Cottage Pie', url: 'https://www.recipetineats.com/cottage-pie/' },
+  { name: 'Swedish Meatballs', url: 'https://www.recipetineats.com/swedish-meatballs/' },
+  { name: 'Baked Fish with Lemon Cream Sauce', url: 'https://www.recipetineats.com/baked-fish-with-lemon-cream-sauce/' },
+  { name: '12 Min Thai Chicken Peanut Noodles', url: 'https://www.recipetineats.com/thai-chicken-peanut-noodles-mince/' },
+  { name: 'Beef Enchiladas', url: 'https://www.recipetineats.com/beef-enchiladas/' },
+  { name: 'Vietnamese Caramelised Pork Bowls', url: 'https://www.recipetineats.com/vietnamese-caramelised-pork-bowls/' },
+  { name: 'Char Siu Pork (Chinese BBQ Pork)', url: 'https://www.recipetineats.com/chinese-barbecue-pork-char-siu/' },
+  { name: 'Chicken Enchiladas', url: 'https://www.recipetineats.com/white-chicken-enchiladas/' },
+  { name: 'Pasta with Creamy Zucchini Sauce', url: 'https://www.recipetineats.com/pasta-with-creamy-zucchini-sauce/' },
+  { name: 'One Pot Chicken Risoni with Crispy Salami', url: 'https://www.recipetineats.com/one-pot-chicken-risoni-with-crispy-salami/' },
+  { name: 'Chicken Satay Curry (Malaysian)', url: 'https://www.recipetineats.com/chicken-satay-curry/' },
+  { name: 'One Pot Cajun Beef Pasta', url: 'https://www.recipetineats.com/one-pot-cajun-beef-pasta/' },
+  { name: 'Chicken Breast in Creamy Mushroom Sauce', url: 'https://www.recipetineats.com/chicken-breast-in-creamy-mushroom-sauce/' },
+  { name: 'Ginger Chicken and Rice', url: 'https://www.recipetineats.com/ginger-chicken-and-rice/' },
+  { name: 'Chicken Parmigiana', url: 'https://www.recipetineats.com/chicken-parmigiana/' },
+  { name: 'Tuna Pasta Bake', url: 'https://www.recipetineats.com/tuna-pasta-bake/' },
+  { name: 'Thai Coconut Pumpkin Soup', url: 'https://www.recipetineats.com/thai-coconut-pumpkin-soup/' },
+];
+
+function loadMeals() {
+  try { const s = localStorage.getItem('dp-meals-v4'); if (s) return JSON.parse(s); } catch(e) {}
+  return DEFAULT_MEALS.map(m => ({...m}));
+}
+
+let meals = loadMeals();
+let history = (() => { try { return JSON.parse(localStorage.getItem('dp-history-v4') || '[]'); } catch(e) { return []; } })();
+let week = (() => { try { return JSON.parse(localStorage.getItem('dp-week-v4') || 'null'); } catch(e) { return null; } })();
+let tonightPick = null;
+
+function save() {
+  try {
+    localStorage.setItem('dp-meals-v4', JSON.stringify(meals));
+    localStorage.setItem('dp-history-v4', JSON.stringify(history));
+    localStorage.setItem('dp-week-v4', JSON.stringify(week));
+  } catch(e) {}
+}
+
+function recentNames() {
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  return history.filter(h => h.ts > cutoff).map(h => h.name);
+}
+
+function pickMeal(excludeNames = []) {
+  if (!meals.length) return null;
+  const recent = recentNames();
+  let pool = meals.filter(m => !excludeNames.includes(m.name) && !recent.includes(m.name));
+  if (!pool.length) pool = meals.filter(m => !excludeNames.includes(m.name));
+  if (!pool.length) pool = [...meals];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function fetchSimplifiedRecipe(mealName, recipeUrl) {
+  const loading = document.getElementById('recipe-loading');
+  const content = document.getElementById('recipe-content');
+  loading.style.display = '';
+  content.innerHTML = '';
+  try {
+    const response = await fetch('/api/recipe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mealName }),
+    });
+    const recipe = await response.json();
+    if (!response.ok) throw new Error(recipe.error);
+    loading.style.display = 'none';
+    content.innerHTML = `
+      <div class="recipe-meta">
+        <span><i class="ti ti-users"></i> Serves ${recipe.serves || '2'}</span>
+        <span><i class="ti ti-clock"></i> ${recipe.time || '–'}</span>
+      </div>
+      <div class="recipe-section">
+        <div class="recipe-section-title">Ingredients</div>
+        <ul class="ingredient-list">${(recipe.ingredients||[]).map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="recipe-section">
+        <div class="recipe-section-title">Method</div>
+        <ol class="step-list">${(recipe.steps||[]).map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>
+      </div>`;
+  } catch(e) {
+    loading.style.display = 'none';
+    content.innerHTML = `<div class="recipe-error">Couldn't load recipe — <a href="${recipeUrl}" target="_blank" style="color:var(--info);">view on RecipeTin Eats ↗</a></div>`;
+  }
+}
+
+function pickTonight() {
+  if (!meals.length) return;
+  tonightPick = pickMeal();
+  if (!tonightPick) return;
+  document.getElementById('tonight-name').textContent = tonightPick.name;
+  const ext = document.getElementById('tonight-ext-link');
+  if (tonightPick.url) { ext.href = tonightPick.url; ext.style.display = ''; }
+  else ext.style.display = 'none';
+  document.getElementById('confirm-btn').style.display = '';
+  document.getElementById('recipe-content').innerHTML = '';
+  fetchSimplifiedRecipe(tonightPick.name, tonightPick.url);
+}
+
+function confirmTonight() {
+  if (!tonightPick) return;
+  history.push({ name: tonightPick.name, ts: Date.now() });
+  save();
+  document.getElementById('confirm-btn').style.display = 'none';
+  renderMeals(); renderHistory();
+  tonightPick = null;
+}
+
+function renderWeek() {
+  const grid = document.getElementById('week-grid');
+  if (!week) { grid.innerHTML = '<div class="empty-state">Hit the button below to plan your week.</div>'; return; }
+  const recent = recentNames();
+  grid.innerHTML = DAYS.map((d,i) => {
+    const meal = week[i];
+    return `<div class="day-row">
+      <span class="day-label">${d}</span>
+      <div class="day-info">
+        <span class="day-meal ${meal?'':'empty'}">${meal?meal.name:'not planned'}</span>
+        ${meal&&meal.url?`<a class="day-recipe-link" href="${meal.url}" target="_blank"><i class="ti ti-external-link"></i> Recipe</a>`:''}
+      </div>
+      ${meal&&recent.includes(meal.name)?'<span class="badge">recent</span>':''}
+      <button class="day-reroll" onclick="rerollDay(${i})"><i class="ti ti-refresh"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function planWeek() {
+  if (!meals.length) return;
+  const used = [];
+  week = DAYS.map(() => { const m = pickMeal(used); if(m) used.push(m.name); return m; });
+  save(); renderWeek();
+}
+
+function rerollDay(i) {
+  const used = week.filter((m,j)=>m&&j!==i).map(m=>m?m.name:null).filter(Boolean);
+  week[i] = pickMeal(used);
+  save(); renderWeek();
+}
+
+function renderMeals() {
+  const list = document.getElementById('meal-list');
+  const empty = document.getElementById('meals-empty');
+  document.getElementById('meal-count').textContent = meals.length;
+  list.querySelectorAll('.meal-row').forEach(el=>el.remove());
+  if (!meals.length) { empty.style.display=''; return; }
+  empty.style.display='none';
+  const recent = recentNames();
+  meals.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'meal-row';
+    const safe = m.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    row.innerHTML = `<span class="meal-name">${m.name}</span>
+      ${recent.includes(m.name)?'<span class="badge">recent</span>':''}
+      ${m.url?`<a class="meal-link" href="${m.url}" target="_blank"><i class="ti ti-external-link"></i> Recipe</a>`:''}
+      <button class="meal-del" onclick="removeMeal('${safe}')"><i class="ti ti-x"></i></button>`;
+    list.appendChild(row);
+  });
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!history.length) { el.innerHTML='<div class="empty-state">No history yet — log meals from the Tonight tab.</div>'; return; }
+  el.innerHTML=[...history].reverse().slice(0,14).map(h=>{
+    const d=new Date(h.ts);
+    const label=d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+    return `<div class="history-row"><span class="history-date">${label}</span><span>${h.name}</span></div>`;
+  }).join('');
+}
+
+function addMeal() {
+  const inp = document.getElementById('meal-input');
+  const val = inp.value.trim();
+  if (!val||meals.find(m=>m.name===val)) { inp.focus(); return; }
+  meals.push({name:val,url:''});
+  inp.value=''; save(); renderMeals(); inp.focus();
+}
+
+function removeMeal(name) { meals=meals.filter(m=>m.name!==name); save(); renderMeals(); }
+function resetMeals() { meals=DEFAULT_MEALS.map(m=>({...m})); save(); renderMeals(); }
+function clearHistory() { history=[]; save(); renderHistory(); renderMeals(); }
+
+const TABS = ['week','tonight','meals','history'];
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active', TABS[i]===name));
+  TABS.forEach(id => {
+    const el = document.getElementById('tab-'+id);
+    const isActive = id === name;
+    el.style.display = isActive ? 'block' : 'none';
+    if (isActive) el.classList.add('active'); else el.classList.remove('active');
+  });
+  if (name==='week') renderWeek();
+  if (name==='history') renderHistory();
+  if (name==='tonight' && !tonightPick) pickTonight();
+}
+
+// init — show week tab
+save(); renderMeals(); renderWeek();
+document.getElementById('tab-week').style.display = 'block';
+document.getElementById('tab-tonight').style.display = 'none';
+document.getElementById('tab-meals').style.display = 'none';
+document.getElementById('tab-history').style.display = 'none';
+</script>
+</body>
+</html>
