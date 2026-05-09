@@ -4,435 +4,1050 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ruby's Recipes</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #ffffff; --bg2: #f7f7f5; --bg3: #f0efe9;
+  --text: #1a1a18; --text2: #6b6b67; --text3: #9f9f9b;
+  --border: rgba(0,0,0,0.10); --border2: rgba(0,0,0,0.20);
+  --accent: #d4603a; --accent2: #e8845c;
+  --info: #185fa5; --info-bg: #e6f1fb;
+  --green: #2d7a4f; --green-bg: #e6f5ec;
+  --radius: 10px; --radius-lg: 16px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+@media (prefers-color-scheme: dark) {
   :root {
-    --bg: #ffffff; --bg2: #f7f7f5; --bg3: #f0efe9;
-    --text: #1a1a18; --text2: #6b6b67; --text3: #9f9f9b;
-    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
-    --info: #185fa5; --info-bg: #e6f1fb;
-    --radius-md: 8px; --radius-lg: 12px;
+    --bg: #1c1c1a; --bg2: #252522; --bg3: #2e2e2b;
+    --text: #f0efe9; --text2: #a8a8a4; --text3: #6b6b67;
+    --border: rgba(255,255,255,0.10); --border2: rgba(255,255,255,0.20);
+    --info: #b5d4f4; --info-bg: #0c2d4a;
+    --green: #6fcf97; --green-bg: #0d3322;
+    --accent: #e8845c;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a; --bg2: #252522; --bg3: #2e2e2b;
-      --text: #f0efe9; --text2: #a8a8a4; --text3: #6b6b67;
-      --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
-      --info: #b5d4f4; --info-bg: #0c447c;
-    }
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 2rem 1rem; }
-  .container { width: 100%; max-width: 520px; }
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg3); color: var(--text);
+  min-height: 100vh; display: flex; justify-content: center;
+  padding: 1.5rem 1rem 4rem;
+}
+.container { width: 100%; max-width: 540px; }
 
-  /* Header */
-  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; }
-  .header-text h1 { font-size: 24px; font-weight: 700; line-height: 1; }
+/* HEADER */
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 8px; }
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+.header p { font-size: 13px; color: var(--text2); margin-top: 2px; }
 
-  /* Cat */
-  .cat-wrap { flex-shrink: 0; }
-  .cat { width: 52px; height: 52px; position: relative; cursor: pointer; }
-  .cat svg { width: 52px; height: 52px; }
-  /* body bob */
-  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-  /* tail wag */
-  @keyframes wag { 0%,100%{transform:rotate(-10deg)} 50%{transform:rotate(14deg)} }
-  /* eye blink */
-  @keyframes blink { 0%,90%,100%{transform:scaleY(1)} 95%{transform:scaleY(0.05)} }
-  /* ear twitch */
-  @keyframes eartwitch { 0%,80%,100%{transform:rotate(0deg)} 85%{transform:rotate(-8deg)} 90%{transform:rotate(4deg)} }
-  .cat-body-g { animation: bob 2s ease-in-out infinite; transform-origin: center bottom; }
-  .cat-tail { animation: wag 1.2s ease-in-out infinite; transform-origin: 2px 2px; }
-  .cat-eye-l, .cat-eye-r { animation: blink 4s ease-in-out infinite; transform-origin: center center; }
-  .cat-ear-l { animation: eartwitch 5s ease-in-out infinite; transform-origin: 8px 10px; }
+/* CARD */
+.card { background: var(--bg); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
 
-  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
-  .tabs { display: flex; border-bottom: 0.5px solid var(--border); }
-  .tab { flex: 1; background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 4px; font-size: 12px; font-weight: 500; color: var(--text2); cursor: pointer; margin-bottom: -0.5px; transition: color 0.15s, border-color 0.15s; }
-  .tab.active { color: var(--text); border-bottom-color: var(--text); }
-  .panel { display: none; padding: 1rem; }
-  .panel.active { display: block; }
-  .panel-flush { display: none; }
-  .panel-flush.active { display: block; }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-  .section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
-  .text-btn { background: none; border: none; font-size: 12px; color: var(--text2); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 0; }
-  .text-btn:hover { color: var(--text); }
-  .meal-list { display: flex; flex-direction: column; gap: 5px; }
-  .meal-row { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: 9px 12px; display: flex; align-items: center; gap: 8px; }
-  .meal-name { flex: 1; font-size: 13px; color: var(--text); }
-  .meal-link { font-size: 12px; color: var(--info); text-decoration: none; flex-shrink: 0; }
-  .meal-link:hover { text-decoration: underline; }
-  .meal-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 15px; padding: 0; flex-shrink: 0; display: flex; align-items: center; }
-  .meal-del:hover { color: #e24b4a; }
-  .badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; background: #FAEEDA; color: #633806; }
-  .add-row { display: flex; gap: 8px; margin-top: 10px; }
-  .add-row input { flex: 1; font-size: 13px; padding: 0 12px; height: 36px; border: 0.5px solid var(--border2); border-radius: var(--radius-md); background: var(--bg); color: var(--text); outline: none; }
-  .add-row input:focus { border-color: var(--text2); }
-  button.primary { background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-md); padding: 0 16px; height: 36px; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
-  button.primary:hover { opacity: 0.85; }
-  button.outline { background: none; color: var(--text); border: 0.5px solid var(--border2); border-radius: var(--radius-md); padding: 0 16px; height: 36px; font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s; }
-  button.outline:hover { background: var(--bg2); }
-  .week-header { padding: 12px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .day-row { padding: 11px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 0.5px solid var(--border); }
-  .day-row:last-child { border-bottom: none; }
-  .day-label { font-size: 12px; font-weight: 600; color: var(--text2); min-width: 38px; }
-  .day-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .day-meal { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .day-meal.empty { color: var(--text3); font-style: italic; }
-  .day-recipe-link { font-size: 11px; color: var(--info); text-decoration: none; }
-  .day-recipe-link:hover { text-decoration: underline; }
-  .day-reroll { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 17px; padding: 2px; flex-shrink: 0; display: flex; align-items: center; }
-  .day-reroll:hover { color: var(--text); }
-  .generate-btn { width: 100%; height: 44px; font-size: 15px; margin-top: 12px; border-radius: var(--radius-lg); justify-content: center; }
-  .tonight-header { padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border); }
-  .tonight-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 0.75rem; }
-  .tonight-name { font-size: 18px; font-weight: 600; color: var(--text); }
-  .tonight-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .recipe-body { padding: 1rem 1.25rem; }
-  .recipe-loading { text-align: center; padding: 1.5rem; color: var(--text2); font-size: 13px; }
-  .recipe-meta { display: flex; gap: 16px; margin-bottom: 1rem; }
-  .recipe-meta span { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 4px; }
-  .recipe-section { margin-bottom: 1.25rem; }
-  .recipe-section:last-child { margin-bottom: 0; }
-  .recipe-section-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
-  .ingredient-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-  .ingredient-list li { font-size: 13px; color: var(--text); display: flex; align-items: flex-start; gap: 8px; line-height: 1.4; }
-  .ingredient-list li::before { content: '·'; color: var(--text3); flex-shrink: 0; }
-  .step-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .step-list li { font-size: 13px; color: var(--text); display: flex; gap: 10px; line-height: 1.5; }
-  .step-num { font-size: 11px; font-weight: 600; background: var(--bg2); color: var(--text2); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-  .recipe-error { font-size: 13px; color: var(--text2); padding: 1rem; text-align: center; }
-  .history-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
-  .history-row:last-child { border-bottom: none; }
-  .history-date { color: var(--text2); min-width: 90px; font-size: 12px; }
-  .empty-state { text-align: center; padding: 2rem; color: var(--text3); font-size: 14px; }
+/* TABS */
+.tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg2); }
+.tab {
+  flex: 1; padding: 12px 4px; font-size: 13px; font-weight: 600;
+  color: var(--text2); background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.15s;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg); }
+.tab:hover:not(.active) { color: var(--text); background: var(--bg); }
+
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* WEEK */
+.week-header-row { padding: 0.75rem 1rem 0; display: flex; justify-content: space-between; align-items: center; }
+.week-header-row span { font-size: 12px; color: var(--text3); }
+.week-day { display: flex; align-items: center; gap: 10px; padding: 10px 1rem; border-bottom: 1px solid var(--border); }
+.week-day:last-child { border-bottom: none; }
+.day-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); width: 32px; flex-shrink: 0; }
+.day-meal { flex: 1; font-size: 14px; font-weight: 500; }
+.day-meal a { color: var(--info); text-decoration: none; font-size: 12px; margin-left: 6px; }
+.day-swap { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border2); background: none; cursor: pointer; color: var(--text2); font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.day-swap:hover { background: var(--bg2); color: var(--text); }
+.week-actions { padding: 1rem; }
+
+/* TONIGHT */
+.tonight-header { padding: 1.1rem; border-bottom: 1px solid var(--border); }
+.tonight-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; min-height: 28px; }
+.tonight-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* SCALER */
+.scaler { display: flex; align-items: center; gap: 10px; background: var(--bg2); border-radius: var(--radius); padding: 10px 14px; margin: 1rem 1rem 0; }
+.scaler > span:first-child { font-size: 13px; color: var(--text2); }
+.scaler-num { font-size: 18px; font-weight: 700; min-width: 24px; text-align: center; }
+.scaler-btn { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border2); background: var(--bg); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.scaler-btn:hover { background: var(--bg3); }
+.scaler-label { font-size: 12px; color: var(--text3); margin-left: auto; }
+
+/* RECIPE */
+.recipe-body { padding: 1rem; }
+.recipe-section { margin-bottom: 1.1rem; }
+.recipe-section h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 8px; }
+.recipe-ing { font-size: 14px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.recipe-step { font-size: 14px; line-height: 1.6; padding: 5px 0 5px 24px; position: relative; }
+.recipe-step::before { content: attr(data-n); position: absolute; left: 0; top: 6px; font-size: 11px; font-weight: 700; color: var(--accent); }
+
+/* MEALS TAB */
+.meals-list { list-style: none; }
+.meal-row { display: flex; align-items: center; gap: 8px; padding: 10px 1rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; }
+.meal-row:hover { background: var(--bg2); }
+.meal-row.selected { background: var(--info-bg); }
+.meal-row-name { flex: 1; font-size: 14px; font-weight: 500; }
+.meal-badge { font-size: 10px; font-weight: 600; background: var(--bg3); color: var(--text3); border-radius: 4px; padding: 2px 6px; flex-shrink: 0; }
+.meal-badge.recent { background: var(--green-bg); color: var(--green); }
+.meal-ext { font-size: 12px; color: var(--info); text-decoration: none; flex-shrink: 0; }
+.meal-del { width: 24px; height: 24px; border-radius: 50%; border: none; background: none; cursor: pointer; color: var(--text3); font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.meal-del:hover { color: #c0392b; }
+
+.recipe-preview { border-top: 2px solid var(--accent); background: var(--bg2); padding: 1rem; animation: slidein 0.2s ease; }
+@keyframes slidein { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+.recipe-preview h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.rp-url { font-size: 12px; color: var(--info); text-decoration: none; display: inline-block; margin-bottom: 10px; }
+
+.add-row { display: flex; gap: 8px; padding: 1rem; border-top: 1px solid var(--border); }
+.add-row input { flex: 1; padding: 8px 10px; border: 1.5px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 14px; outline: none; }
+.add-row input:focus { border-color: var(--accent); }
+.meals-footer { padding: 0 1rem 1rem; display: flex; gap: 8px; }
+
+/* HISTORY */
+.history-row { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.history-row:last-child { border-bottom: none; }
+.history-date { font-size: 12px; color: var(--text3); min-width: 82px; flex-shrink: 0; padding-top: 1px; }
+.panel-pad { padding: 1.1rem; }
+
+/* BUTTONS */
+.btn-primary { background: var(--accent); color: #fff; border: none; padding: 10px 16px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-outline { background: none; border: 1.5px solid var(--border2); color: var(--text); padding: 8px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-outline:hover { border-color: var(--text2); background: var(--bg2); }
+.btn-sm { padding: 7px 13px; font-size: 13px; }
+.empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 14px; }
+.loading-line { color: var(--text3); font-size: 14px; text-align: center; padding: 1.5rem; }
+
+/* MAP */
+#bus-map-wrap { border-top: 1px solid var(--border); }
+#bus-map { height: 260px; width: 100%; }
+.bus-map-toggle { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:9px 1rem; font-size:13px; font-weight:600; color:var(--text2); cursor:pointer; text-align:left; display:none; }
+.bus-map-toggle:hover { background:var(--bg2); }
+/* custom bus marker */
+.bus-marker-icon { background:var(--accent,#d4603a); border:2px solid white; border-radius:50% 50% 50% 0; width:22px; height:22px; transform:rotate(-45deg); box-shadow:0 1px 4px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; }
+.bus-marker-label { transform:rotate(45deg); font-size:9px; font-weight:800; color:white; line-height:1; }
+.stop-marker { background:#185fa5; border:2px solid white; border-radius:50%; width:14px; height:14px; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+
+.bus-row { display:flex; align-items:center; gap:10px; padding:10px 1rem; border-bottom:1px solid var(--border); }
+.bus-row:last-child { border-bottom:none; }
+.bus-route { font-size:12px; font-weight:700; background:var(--accent); color:white; border-radius:5px; padding:2px 7px; flex-shrink:0; min-width:36px; text-align:center; }
+.bus-dest { flex:1; font-size:14px; font-weight:500; }
+.bus-time-col { display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; gap:1px; }
+.bus-mins { font-size:15px; font-weight:700; color:var(--green); }
+.bus-mins.bus-due { color:var(--accent); }
+.bus-mins.bus-late { color:#c0392b; }
+.bus-clock { font-size:11px; color:var(--text3); }
+
+/* ── ANIMATIONS ── */
+@keyframes bob        { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+@keyframes dogBob     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+@keyframes blink      { 0%,92%,100%{transform:scaleY(1)} 96%{transform:scaleY(0.07)} }
+@keyframes earTwitch  { 0%,88%,100%{transform:rotate(0deg)} 90%{transform:rotate(-8deg)} 95%{transform:rotate(4deg)} }
+/* FIXED: tail wags from its BASE at body left side */
+@keyframes tailWagCat {
+  0%,100%{ transform: rotate(-18deg); }
+  50%    { transform: rotate(14deg);  }
+}
+@keyframes tailWagDog {
+  0%,100%{ transform: rotate(-25deg); }
+  50%    { transform: rotate(25deg);  }
+}
+@keyframes surfRide {
+  0%,100%{ transform: translateY(0) rotate(-1deg); }
+  50%    { transform: translateY(-5px) rotate(1.5deg); }
+}
+@keyframes waveScroll { 0%{ transform:translateX(0); } 100%{ transform:translateX(-80px); } }
+
+.cat-svg        { animation: bob 2.2s ease-in-out infinite; cursor: pointer; }
+.cat-blink      { animation: blink 5s ease-in-out infinite; transform-origin: center center; }
+.cat-ear-r      { animation: earTwitch 4.5s ease-in-out infinite; transform-origin: 50% 100%; }
+/* tail pivots from its root — translate to root, rotate, translate back */
+.cat-tail       { transform-origin: 0px 0px; animation: tailWagCat 1.9s ease-in-out infinite; }
+
+.dog-svg        { animation: dogBob 2s ease-in-out infinite 0.3s; }
+.dog-tail       { transform-origin: 0px 0px; animation: tailWagDog 0.65s ease-in-out infinite; }
+
+.surfer-group   { animation: surfRide 2.4s ease-in-out infinite 0.1s; }
+.wave-scroll    { animation: waveScroll 1.8s linear infinite; }
 </style>
 </head>
 <body>
 <div class="container">
 
+  <!-- HEADER ROW -->
   <div class="header">
-    <div class="cat-wrap">
-      <div class="cat" title="meow">
-        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- tail -->
-          <g class="cat-tail" style="transform:rotate(-10deg)" transform="translate(6,36)">
-            <path d="M2 2 Q-6 10 -4 18 Q-2 24 4 22" stroke="#b07d5a" stroke-width="3" stroke-linecap="round" fill="none"/>
-          </g>
-          <!-- body group bobs -->
-          <g class="cat-body-g">
-            <!-- body -->
-            <ellipse cx="26" cy="34" rx="14" ry="11" fill="#d4a96a"/>
-            <!-- belly -->
-            <ellipse cx="26" cy="36" rx="8" ry="7" fill="#f0d4a8"/>
-            <!-- head -->
-            <ellipse cx="26" cy="20" rx="12" ry="11" fill="#d4a96a"/>
-            <!-- ears -->
-            <g class="cat-ear-l">
-              <polygon points="14,12 10,2 20,10" fill="#d4a96a"/>
-              <polygon points="14.5,11 11.5,4 18,9.5" fill="#e8a0a0"/>
-            </g>
-            <polygon points="38,12 42,2 32,10" fill="#d4a96a"/>
-            <polygon points="37.5,11 40.5,4 34,9.5" fill="#e8a0a0"/>
-            <!-- eyes -->
-            <ellipse class="cat-eye-l" cx="21" cy="19" rx="2.5" ry="2.8" fill="#2a1a0a"/>
-            <ellipse class="cat-eye-r" cx="31" cy="19" rx="2.5" ry="2.8" fill="#2a1a0a"/>
-            <!-- eye shine -->
-            <circle cx="22" cy="18" r="0.9" fill="white"/>
-            <circle cx="32" cy="18" r="0.9" fill="white"/>
-            <!-- nose -->
-            <ellipse cx="26" cy="23" rx="1.5" ry="1" fill="#e88080"/>
-            <!-- mouth -->
-            <path d="M24 24.5 Q26 26.5 28 24.5" stroke="#b05050" stroke-width="0.8" stroke-linecap="round" fill="none"/>
-            <!-- whiskers -->
-            <line x1="14" y1="22" x2="22" y2="23" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
-            <line x1="14" y1="24" x2="22" y2="24" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
-            <line x1="38" y1="22" x2="30" y2="23" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
-            <line x1="38" y1="24" x2="30" y2="24" stroke="#8a6a4a" stroke-width="0.8" opacity="0.7"/>
-            <!-- paws -->
-            <ellipse cx="16" cy="44" rx="5" ry="3.5" fill="#d4a96a"/>
-            <ellipse cx="36" cy="44" rx="5" ry="3.5" fill="#d4a96a"/>
-            <!-- paw toes -->
-            <ellipse cx="13" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
-            <ellipse cx="16" cy="46" rx="1.5" ry="1" fill="#c09050"/>
-            <ellipse cx="19" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
-            <ellipse cx="33" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
-            <ellipse cx="36" cy="46" rx="1.5" ry="1" fill="#c09050"/>
-            <ellipse cx="39" cy="45.5" rx="1.5" ry="1" fill="#c09050"/>
-          </g>
-        </svg>
+    <div class="header-left">
+
+      <!-- RAGDOLL CAT — tail pivots from body base-left correctly -->
+      <svg class="cat-svg" width="54" height="58" viewBox="0 0 54 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- tail root is at (11,46) — group translates there, rotates, translates back -->
+        <g class="cat-tail" transform="translate(11,46)">
+          <path d="M0,0 C-10,6 -12,16 -8,24 C-5,30 2,28 3,22" stroke="#c8b4d8" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <ellipse cx="3" cy="22" rx="3" ry="2.5" fill="#e0d0ee" transform="rotate(-10,3,22)"/>
+        </g>
+        <!-- body -->
+        <ellipse cx="27" cy="39" rx="14" ry="12" fill="#e8dff0"/>
+        <ellipse cx="27" cy="39" rx="8" ry="7" fill="#f5f0fa"/>
+        <!-- head -->
+        <ellipse cx="27" cy="22" rx="13" ry="12" fill="#e8dff0"/>
+        <!-- ears -->
+        <polygon points="15,14 12,4 19,11" fill="#e8dff0"/>
+        <polygon points="16,13 14,6 18,11" fill="#f0b8d0"/>
+        <g class="cat-ear-r">
+          <polygon points="39,14 42,4 35,11" fill="#e8dff0"/>
+          <polygon points="38,13 40,6 36,11" fill="#f0b8d0"/>
+        </g>
+        <!-- eyes -->
+        <ellipse class="cat-blink" cx="21.5" cy="21" rx="2.6" ry="2.9" fill="#6050aa"/>
+        <ellipse class="cat-blink" cx="32.5" cy="21" rx="2.6" ry="2.9" fill="#6050aa"/>
+        <ellipse cx="21.5" cy="21" rx="1.1" ry="2.3" fill="#1a1020"/>
+        <ellipse cx="32.5" cy="21" rx="1.1" ry="2.3" fill="#1a1020"/>
+        <circle cx="22.4" cy="19.8" r="0.7" fill="white"/>
+        <circle cx="33.4" cy="19.8" r="0.7" fill="white"/>
+        <!-- nose -->
+        <polygon points="27,24.5 25.5,26.2 28.5,26.2" fill="#e898b8"/>
+        <!-- mouth -->
+        <path d="M25.5,26.5 Q27,28.2 28.5,26.5" stroke="#b87090" stroke-width="0.8" stroke-linecap="round" fill="none"/>
+        <!-- whiskers -->
+        <line x1="15" y1="25" x2="20" y2="24.5" stroke="#c090c0" stroke-width="0.7" stroke-linecap="round"/>
+        <line x1="15" y1="26.5" x2="20" y2="26.5" stroke="#c090c0" stroke-width="0.7" stroke-linecap="round"/>
+        <line x1="34" y1="24.5" x2="39" y2="25" stroke="#c090c0" stroke-width="0.7" stroke-linecap="round"/>
+        <line x1="34" y1="26.5" x2="39" y2="26.5" stroke="#c090c0" stroke-width="0.7" stroke-linecap="round"/>
+        <!-- paws -->
+        <ellipse cx="19" cy="50" rx="5" ry="3.5" fill="#e8dff0"/>
+        <ellipse cx="35" cy="50" rx="5" ry="3.5" fill="#e8dff0"/>
+      </svg>
+
+      <div>
+        <h1>Ruby's Recipes</h1>
+        <p>Sun – Thu dinners 🍽️</p>
       </div>
     </div>
-    <div class="header-text">
-      <h1>Ruby's Recipes</h1>
-    </div>
+
+    <!-- WHITE GOLDEN RETRIEVER -->
+    <svg class="dog-svg" width="60" height="56" viewBox="0 0 60 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- tail — root at (48,24), wags up/down -->
+      <g class="dog-tail" transform="translate(48,24)">
+        <path d="M0,0 C8,-5 14,-12 12,-20" stroke="#f0ead8" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+        <path d="M12,-20 C13,-24 10,-23 9,-20" stroke="#e0d8c0" stroke-width="3" stroke-linecap="round" fill="none"/>
+      </g>
+      <!-- body -->
+      <ellipse cx="30" cy="37" rx="18" ry="12" fill="#f5f0e0"/>
+      <!-- fluffy chest -->
+      <ellipse cx="22" cy="35" rx="7" ry="8" fill="#fffcf0"/>
+      <!-- head -->
+      <ellipse cx="15" cy="22" rx="13" ry="11" fill="#f5f0e0"/>
+      <!-- snout -->
+      <ellipse cx="7" cy="25" rx="6.5" ry="4.5" fill="#ede5cc"/>
+      <!-- nose -->
+      <ellipse cx="4" cy="23.5" rx="2.8" ry="2" fill="#2a1810"/>
+      <ellipse cx="3.2" cy="24" rx="0.6" ry="0.4" fill="#0a0804"/>
+      <ellipse cx="4.8" cy="24" rx="0.6" ry="0.4" fill="#0a0804"/>
+      <!-- eye -->
+      <circle cx="14" cy="20" r="3" fill="#2a1810"/>
+      <circle cx="15.2" cy="18.8" r="1" fill="white"/>
+      <!-- floppy ear right -->
+      <ellipse cx="24" cy="27" rx="5" ry="9" fill="#ede5cc" transform="rotate(-15,24,27)"/>
+      <!-- ear left -->
+      <ellipse cx="8" cy="16" rx="4" ry="7" fill="#ede5cc" transform="rotate(20,8,16)"/>
+      <!-- legs -->
+      <rect x="14" y="45" width="7" height="10" rx="3.5" fill="#ede8d5"/>
+      <rect x="23" y="45" width="7" height="10" rx="3.5" fill="#ede8d5"/>
+      <rect x="33" y="45" width="7" height="10" rx="3.5" fill="#ede8d5"/>
+      <rect x="42" y="45" width="7" height="10" rx="3.5" fill="#ede8d5"/>
+      <!-- fur texture lines -->
+      <path d="M18,31 Q21,27 24,31" stroke="#e0d8c0" stroke-width="1.2" fill="none"/>
+      <path d="M23,29 Q26,25 29,29" stroke="#e0d8c0" stroke-width="1.2" fill="none"/>
+      <!-- tongue -->
+      <ellipse cx="6.5" cy="29" rx="2.2" ry="2.8" fill="#e86060"/>
+      <line x1="6.5" y1="27" x2="6.5" y2="31" stroke="#c04040" stroke-width="0.8"/>
+    </svg>
   </div>
 
+  <!-- SURF SCENE -->
+  <div style="border-radius:var(--radius-lg);overflow:hidden;height:84px;margin-bottom:1rem;background:linear-gradient(180deg,#b8dff5 0%,#7bbde0 55%,#4a9fd0 100%);position:relative;">
+    <svg width="100%" height="84" viewBox="0 0 540 84" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <!-- sky details -->
+      <circle cx="496" cy="20" r="15" fill="#ffe566" opacity="0.88"/>
+      <line x1="496" y1="2"  x2="496" y2="6"  stroke="#ffe566" stroke-width="2.2"/>
+      <line x1="496" y1="34" x2="496" y2="38" stroke="#ffe566" stroke-width="2.2"/>
+      <line x1="514" y1="20" x2="510" y2="20" stroke="#ffe566" stroke-width="2.2"/>
+      <line x1="478" y1="20" x2="482" y2="20" stroke="#ffe566" stroke-width="2.2"/>
+      <!-- birds -->
+      <path d="M410,16 Q416,11 422,16" stroke="rgba(255,255,255,0.7)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M428,13 Q434,8 440,13"  stroke="rgba(255,255,255,0.7)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+      <!-- SURFER — animated as a group -->
+      <g class="surfer-group">
+        <!-- surfboard -->
+        <ellipse cx="205" cy="68" rx="38" ry="6" fill="#ff5722" transform="rotate(-3,205,68)"/>
+        <ellipse cx="205" cy="68" rx="32" ry="4" fill="#ff7043" transform="rotate(-3,205,68)"/>
+        <polygon points="170,68 165,75 172,70" fill="#c62828"/>
+        <!-- back leg -->
+        <line x1="197" y1="60" x2="192" y2="66" stroke="#1565c0" stroke-width="4" stroke-linecap="round"/>
+        <!-- front leg -->
+        <line x1="203" y1="60" x2="210" y2="65" stroke="#1565c0" stroke-width="4" stroke-linecap="round"/>
+        <!-- torso / wetsuit -->
+        <rect x="192" y="47" width="17" height="15" rx="6" fill="#1565c0"/>
+        <!-- left arm out for balance -->
+        <line x1="193" y1="52" x2="176" y2="50" stroke="#ffcc80" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- right arm -->
+        <line x1="208" y1="52" x2="224" y2="55" stroke="#ffcc80" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- head -->
+        <circle cx="200" cy="40" r="8.5" fill="#ffcc80"/>
+        <!-- hair -->
+        <path d="M191,38 Q193,29 200,31 Q207,29 209,38" fill="#5d3a1a"/>
+        <!-- face -->
+        <circle cx="197" cy="40" r="1.5" fill="#3e2723"/>
+        <path d="M196,44 Q200,47 204,44" stroke="#bf8040" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+        <!-- board logo -->
+        <circle cx="205" cy="67" r="2.5" fill="white" opacity="0.4"/>
+      </g>
+
+      <!-- SCROLLING WAVES -->
+      <g class="wave-scroll">
+        <!-- generate enough width to loop seamlessly -->
+        <!-- back wave -->
+        <path d="M0,60 Q20,50 40,60 Q60,70 80,60 Q100,50 120,60 Q140,70 160,60 Q180,50 200,60 Q220,70 240,60 Q260,50 280,60 Q300,70 320,60 Q340,50 360,60 Q380,70 400,60 Q420,50 440,60 Q460,70 480,60 Q500,50 520,60 Q540,70 560,60 Q580,50 600,60 Q620,70 640,60 L640,84 L0,84 Z" fill="#1e88e5" opacity="0.55"/>
+        <!-- mid wave -->
+        <path d="M0,65 Q25,55 50,65 Q75,75 100,65 Q125,55 150,65 Q175,75 200,65 Q225,55 250,65 Q275,75 300,65 Q325,55 350,65 Q375,75 400,65 Q425,55 450,65 Q475,75 500,65 Q525,55 550,65 Q575,75 600,65 Q625,55 640,65 L640,84 L0,84 Z" fill="#1565c0" opacity="0.75"/>
+        <!-- foam crest -->
+        <path d="M0,65 Q25,57 50,65 Q75,73 100,65 Q125,57 150,65 Q175,73 200,65 Q225,57 250,65 Q275,73 300,65 Q325,57 350,65 Q375,73 400,65 Q425,57 450,65 Q475,73 500,65 Q525,57 550,65 Q575,73 600,65 Q625,57 640,65" stroke="rgba(255,255,255,0.65)" stroke-width="2.5" fill="none"/>
+      </g>
+      <!-- static foam flecks -->
+      <circle cx="90"  cy="63" r="3"   fill="white" opacity="0.45"/>
+      <circle cx="310" cy="62" r="2.5" fill="white" opacity="0.4"/>
+      <circle cx="460" cy="63" r="2"   fill="white" opacity="0.35"/>
+    </svg>
+  </div>
+
+  <!-- MAIN CARD -->
   <div class="card">
     <div class="tabs">
       <button class="tab active" onclick="switchTab('week')">Sun–Thu</button>
       <button class="tab" onclick="switchTab('tonight')">Tonight</button>
-      <button class="tab" onclick="switchTab('meals')">My meals</button>
-      <button class="tab" onclick="switchTab('history')">Recent</button>
+      <button class="tab" onclick="switchTab('recipes')">Recipes</button>
+      <button class="tab" onclick="switchTab('history')" style="display:none">Recent</button>
     </div>
 
-    <div id="tab-week" class="panel-flush active">
-      <div class="week-header">
-        <span class="section-title">This week's dinners</span>
-        <span style="font-size:12px; color:var(--text3);">tap <i class="ti ti-refresh"></i> to swap</span>
+    <!-- WEEK TAB -->
+    <div id="tab-week" class="panel active">
+      <div class="week-header-row">
+        <span>This week's dinners</span>
+        <span>tap ↻ to swap</span>
       </div>
-      <div id="week-grid"><div class="empty-state">Hit the button below to plan your week.</div></div>
-      <div style="padding:0 1rem 1rem;">
-        <button class="primary generate-btn" onclick="planWeek()"><i class="ti ti-dice"></i> Generate Sun–Thu plan</button>
+      <div id="week-grid"></div>
+      <div class="week-actions">
+        <button class="btn-primary" onclick="planWeek()">🎲 Plan the week</button>
       </div>
     </div>
 
-    <div id="tab-tonight" class="panel-flush">
+    <!-- TONIGHT TAB -->
+    <div id="tab-tonight" class="panel">
       <div class="tonight-header">
-        <div class="tonight-meta">
-          <div>
-            <p style="font-size:12px; color:var(--text2); margin-bottom:3px;">Tonight's dinner</p>
-            <div class="tonight-name" id="tonight-name">—</div>
-          </div>
-          <a id="tonight-ext-link" href="#" target="_blank" style="font-size:12px; color:var(--info); text-decoration:none; display:none; flex-shrink:0; margin-top:4px;"><i class="ti ti-external-link"></i> Full recipe</a>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <select id="meal-select" onchange="onMealSelect()" style="flex:1;min-width:0;padding:9px 12px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;font-weight:500;outline:none;cursor:pointer;appearance:auto;">
+            <option value="">— choose a meal —</option>
+          </select>
+          <a id="tonight-link" href="#" target="_blank" style="display:none;font-size:13px;color:var(--info);text-decoration:none;white-space:nowrap;">↗ Recipe</a>
+          <button class="btn-primary btn-sm" id="confirm-btn" onclick="confirmTonight()" style="display:none;width:auto;white-space:nowrap;">✓ Log it</button>
         </div>
-        <div class="tonight-actions">
-          <button class="outline" onclick="pickTonight()"><i class="ti ti-refresh"></i> Pick for me</button>
-          <button class="primary" id="confirm-btn" onclick="confirmTonight()" style="display:none;"><i class="ti ti-check"></i> Log it</button>
+      </div>
+      <div id="scaler-row" style="display:none">
+        <div class="scaler">
+          <span>Servings</span>
+          <button class="scaler-btn" onclick="adjustServings(-1)">−</button>
+          <span class="scaler-num" id="scaler-num">2</span>
+          <button class="scaler-btn" onclick="adjustServings(1)">+</button>
+          <span class="scaler-label" id="scaler-label">base: 2</span>
         </div>
       </div>
       <div class="recipe-body">
-        <div class="recipe-loading" id="recipe-loading" style="display:none;"><i class="ti ti-loader"></i> Getting recipe...</div>
-        <div id="recipe-content"><p style="font-size:13px; color:var(--text3); text-align:center; padding:1rem 0;">Pick a meal to see the recipe</p></div>
+        <div id="recipe-loading" class="loading-line" style="display:none">✦ Getting recipe…</div>
+        <div id="recipe-content"><p class="empty">Pick a meal above to see the recipe.</p></div>
       </div>
     </div>
 
-    <div id="tab-meals" class="panel">
-      <div class="section-header">
-        <span class="section-title">Meal list (<span id="meal-count">0</span>)</span>
-        <button class="text-btn" onclick="resetMeals()"><i class="ti ti-refresh"></i> Reset</button>
+    <!-- RECIPES TAB -->
+    <div id="tab-recipes" class="panel">
+      <ul class="meals-list" id="meals-list"></ul>
+      <div id="meal-recipe-preview" style="display:none" class="recipe-preview">
+        <h2 id="mrp-name"></h2>
+        <a id="mrp-url" href="#" target="_blank" class="rp-url" style="display:none">↗ Open full recipe</a>
+        <div id="mrp-loading" class="loading-line" style="display:none">✦ Loading…</div>
+        <div id="mrp-content"></div>
       </div>
-      <div class="meal-list" id="meal-list"><div class="empty-state" id="meals-empty">No meals yet.</div></div>
       <div class="add-row">
-        <input type="text" id="meal-input" placeholder="Add your own meal..." onkeydown="if(event.key==='Enter') addMeal()" />
-        <button class="primary" onclick="addMeal()"><i class="ti ti-plus"></i> Add</button>
+        <input id="meal-input" placeholder="Add a meal…" onkeydown="if(event.key==='Enter')addMeal()">
+        <button class="btn-primary btn-sm" onclick="addMeal()" style="width:auto">Add</button>
+      </div>
+      <div class="meals-footer">
+        <button class="btn-outline" onclick="resetMeals()">↺ Reset to defaults</button>
       </div>
     </div>
 
+    <!-- HISTORY TAB -->
     <div id="tab-history" class="panel">
-      <div class="section-header">
-        <span class="section-title">Recently made</span>
-        <button class="text-btn" onclick="clearHistory()">Clear</button>
+      <div class="panel-pad">
+        <div id="history-list"></div>
+        <button class="btn-outline" onclick="clearHistory()" style="margin-top:1rem">Clear history</button>
       </div>
-      <div id="history-list"><div class="empty-state">No history yet.</div></div>
+    </div>
+  </div>
+
+  <!-- BUS TRACKER -->
+  <div class="card" style="margin-top:1rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;cursor:pointer;user-select:none;" onclick="toggleBusSettings()">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;">🚌</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;" id="bus-header-name">My bus stop</div>
+          <div style="font-size:12px;color:var(--text3);" id="bus-header-sub">tap to set up</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn-outline btn-sm" id="bus-refresh-btn" onclick="event.stopPropagation();fetchDepartures()" style="display:none;">↻</button>
+        <span id="bus-chevron" style="font-size:18px;color:var(--text3);transition:transform 0.2s;">⌄</span>
+      </div>
+    </div>
+    <div id="bus-settings" style="border-top:1px solid var(--border);padding:1rem;display:none;">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Enter your <strong>Metlink API key</strong> (free at <a href="https://opendata.metlink.org.nz" target="_blank" style="color:var(--info);">opendata.metlink.org.nz</a>) and your stop number (4-digit code on the sign).</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input id="bus-apikey" placeholder="API key" type="password" style="padding:8px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;outline:none;font-family:monospace;">
+        <div style="display:flex;gap:8px;">
+          <input id="bus-stopid" placeholder="Stop ID e.g. 5516" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;outline:none;">
+          <input id="bus-stopname" placeholder="Label e.g. Home stop" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;outline:none;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" onclick="saveBusSettings()">Save &amp; load</button>
+          <button class="btn-outline" onclick="clearBusSettings()">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div id="bus-departures" style="display:none;">
+      <div id="bus-loading" class="loading-line" style="display:none;">Checking departures…</div>
+      <div id="bus-list"></div>
+      <div style="padding:0.5rem 1rem 0.75rem;font-size:11px;color:var(--text3);text-align:right;" id="bus-updated"></div>
+      <button class="bus-map-toggle" id="bus-map-btn" onclick="toggleBusMap()">🗺 Show map</button>
+      <div id="bus-map-wrap" style="display:none;">
+        <div id="bus-map"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu'];
 
 const DEFAULT_MEALS = [
-  { name: 'Sweet and Sour Pork', url: 'https://www.recipetineats.com/sweet-and-sour-pork/' },
-  { name: 'Thai Cashew Chicken Stir Fry', url: 'https://www.recipetineats.com/thai-cashew-chicken-stir-fry/' },
-  { name: 'One Pot Pasta Bolognese', url: 'https://www.recipetineats.com/one-pot-pasta-bolognese/' },
-  { name: 'Cottage Pie', url: 'https://www.recipetineats.com/cottage-pie/' },
-  { name: 'Swedish Meatballs', url: 'https://www.recipetineats.com/swedish-meatballs/' },
-  { name: 'Baked Fish with Lemon Cream Sauce', url: 'https://www.recipetineats.com/baked-fish-with-lemon-cream-sauce/' },
-  { name: '12 Min Thai Chicken Peanut Noodles', url: 'https://www.recipetineats.com/thai-chicken-peanut-noodles-mince/' },
-  { name: 'Beef Enchiladas', url: 'https://www.recipetineats.com/beef-enchiladas/' },
-  { name: 'Vietnamese Caramelised Pork Bowls', url: 'https://www.recipetineats.com/vietnamese-caramelised-pork-bowls/' },
-  { name: 'Char Siu Pork (Chinese BBQ Pork)', url: 'https://www.recipetineats.com/chinese-barbecue-pork-char-siu/' },
-  { name: 'Chicken Enchiladas', url: 'https://www.recipetineats.com/white-chicken-enchiladas/' },
-  { name: 'Pasta with Creamy Zucchini Sauce', url: 'https://www.recipetineats.com/pasta-with-creamy-zucchini-sauce/' },
-  { name: 'One Pot Chicken Risoni with Crispy Salami', url: 'https://www.recipetineats.com/one-pot-chicken-risoni-with-crispy-salami/' },
-  { name: 'Chicken Satay Curry (Malaysian)', url: 'https://www.recipetineats.com/chicken-satay-curry/' },
-  { name: 'One Pot Cajun Beef Pasta', url: 'https://www.recipetineats.com/one-pot-cajun-beef-pasta/' },
-  { name: 'Chicken Breast in Creamy Mushroom Sauce', url: 'https://www.recipetineats.com/chicken-breast-in-creamy-mushroom-sauce/' },
-  { name: 'Ginger Chicken and Rice', url: 'https://www.recipetineats.com/ginger-chicken-and-rice/' },
-  { name: 'Chicken Parmigiana', url: 'https://www.recipetineats.com/chicken-parmigiana/' },
-  { name: 'Tuna Pasta Bake', url: 'https://www.recipetineats.com/tuna-pasta-bake/' },
-  { name: 'Thai Coconut Pumpkin Soup', url: 'https://www.recipetineats.com/thai-coconut-pumpkin-soup/' },
+  { name:'Chinese Beef Stir Fry',                url:'https://www.recipetineats.com/chinese-beef-stir-fry/' },
+  { name:'Whipped Ricotta One Pot Chicken Pasta', url:'https://www.recipetineats.com/one-pot-chicken-pasta/' },
+  { name:'Thai Sweet Chilli Beef Bowls',          url:'https://www.recipetineats.com/thai-sweet-chilli-beef-bowls/' },
+  { name:'Lemon Garlic Salmon Tray Bake',         url:'https://www.recipetineats.com/baked-lemon-garlic-butter-salmon/' },
+  { name:'One Pot Chicken Risoni',                url:'https://www.recipetineats.com/one-pot-chicken-risoni/' },
+  { name:'Qeema – Indian Curried Beef Mince',     url:'https://www.recipetineats.com/qeema-indian-beef-mince/' },
+  { name:'Creamy Chicken Alfredo Pasta',          url:'https://www.recipetineats.com/chicken-alfredo/' },
+  { name:'Asian Chilli Chicken',                  url:'https://www.recipetineats.com/asian-chilli-chicken/' },
+  { name:'One Pot Creamy Tomato Beef Pasta',      url:'https://www.recipetineats.com/one-pot-pasta-beef-tomato/' },
+  { name:'Chicken Francese',                      url:'https://www.recipetineats.com/chicken-francese/' },
+  { name:'Garlic Butter Prawns',                  url:'https://www.recipetineats.com/garlic-butter-prawns-shrimp/' },
+  { name:'Teriyaki Salmon',                       url:'https://www.recipetineats.com/teriyaki-salmon/' },
+  { name:'Spaghetti Bolognese',                   url:'https://www.recipetineats.com/spaghetti-bolognese/' },
+  { name:'Honey Garlic Chicken',                  url:'https://www.recipetineats.com/honey-garlic-chicken/' },
+  { name:'Pad Thai',                              url:'https://www.recipetineats.com/pad-thai-recipe/' },
+  { name:'Chicken Tacos',                         url:'https://www.recipetineats.com/chicken-tacos/' },
 ];
 
-function loadMeals() {
-  try { const s = localStorage.getItem('dp-meals-v4'); if (s) return JSON.parse(s); } catch(e) {}
-  return DEFAULT_MEALS.map(m => ({...m}));
-}
+// ── STATE ──
+let meals    = JSON.parse(localStorage.getItem('rr-meals')   || 'null') || DEFAULT_MEALS.map(m=>({...m}));
+let history  = JSON.parse(localStorage.getItem('rr-history') || '[]');
+let weekPlan = JSON.parse(localStorage.getItem('rr-week')    || 'null');
 
-let meals = loadMeals();
-let history = (() => { try { return JSON.parse(localStorage.getItem('dp-history-v4') || '[]'); } catch(e) { return []; } })();
-let week = (() => { try { return JSON.parse(localStorage.getItem('dp-week-v5') || 'null'); } catch(e) { return null; } })();
-let tonightPick = null;
+let tonightPick     = null;
+let baseIngredients = [];
+let storedSteps     = [];
+let currentServings = 2;
+let baseServings    = 2;
+let selectedMealIdx = -1;
 
 function save() {
-  try {
-    localStorage.setItem('dp-meals-v4', JSON.stringify(meals));
-    localStorage.setItem('dp-history-v4', JSON.stringify(history));
-    localStorage.setItem('dp-week-v5', JSON.stringify(week));
-  } catch(e) {}
+  localStorage.setItem('rr-meals',   JSON.stringify(meals));
+  localStorage.setItem('rr-history', JSON.stringify(history));
+  if (weekPlan) localStorage.setItem('rr-week', JSON.stringify(weekPlan));
 }
 
+// ── WEEK ──
 function recentNames() {
-  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  return history.filter(h => h.ts > cutoff).map(h => h.name);
+  const cutoff = Date.now() - 7*24*60*60*1000;
+  return new Set(history.filter(h=>h.ts>cutoff).map(h=>h.name));
 }
 
-function pickMeal(excludeNames = []) {
-  if (!meals.length) return null;
+function pickMeal(exclude=[]) {
   const recent = recentNames();
-  let pool = meals.filter(m => !excludeNames.includes(m.name) && !recent.includes(m.name));
-  if (!pool.length) pool = meals.filter(m => !excludeNames.includes(m.name));
-  if (!pool.length) pool = [...meals];
-  return pool[Math.floor(Math.random() * pool.length)];
+  const pool = meals.filter(m=>!exclude.includes(m.name) && !recent.has(m.name));
+  const src = pool.length ? pool : meals.filter(m=>!exclude.includes(m.name));
+  if (!src.length) return meals[Math.floor(Math.random()*meals.length)];
+  return src[Math.floor(Math.random()*src.length)];
 }
 
-async function fetchSimplifiedRecipe(mealName, recipeUrl) {
-  const loading = document.getElementById('recipe-loading');
-  const content = document.getElementById('recipe-content');
-  loading.style.display = '';
-  content.innerHTML = '';
-  try {
-    const response = await fetch('/api/recipe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mealName }),
-    });
-    const recipe = await response.json();
-    if (!response.ok) throw new Error(recipe.error);
-    loading.style.display = 'none';
-    content.innerHTML = `
-      <div class="recipe-meta">
-        <span><i class="ti ti-users"></i> Serves ${recipe.serves || '2'}</span>
-        <span><i class="ti ti-clock"></i> ${recipe.time || '–'}</span>
-      </div>
-      <div class="recipe-section">
-        <div class="recipe-section-title">Ingredients</div>
-        <ul class="ingredient-list">${(recipe.ingredients||[]).map(i=>`<li>${i}</li>`).join('')}</ul>
-      </div>
-      <div class="recipe-section">
-        <div class="recipe-section-title">Method</div>
-        <ol class="step-list">${(recipe.steps||[]).map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>
-      </div>`;
-  } catch(e) {
-    loading.style.display = 'none';
-    content.innerHTML = `<div class="recipe-error">Couldn't load recipe — <a href="${recipeUrl}" target="_blank" style="color:var(--info);">view full recipe ↗</a></div>`;
-  }
+function planWeek() {
+  const chosen = [];
+  weekPlan = DAYS.map(()=>{
+    const m = pickMeal(chosen.map(c=>c.name));
+    chosen.push(m);
+    return { name:m.name, url:m.url||'' };
+  });
+  save(); renderWeek();
 }
 
-function pickTonight() {
-  if (!meals.length) return;
-  tonightPick = pickMeal();
-  if (!tonightPick) return;
-  document.getElementById('tonight-name').textContent = tonightPick.name;
-  const ext = document.getElementById('tonight-ext-link');
-  if (tonightPick.url) { ext.href = tonightPick.url; ext.style.display = ''; }
-  else ext.style.display = 'none';
-  document.getElementById('confirm-btn').style.display = '';
-  document.getElementById('recipe-content').innerHTML = '';
-  fetchSimplifiedRecipe(tonightPick.name, tonightPick.url);
-}
-
-function confirmTonight() {
-  if (!tonightPick) return;
-  history.push({ name: tonightPick.name, ts: Date.now() });
-  save();
-  document.getElementById('confirm-btn').style.display = 'none';
-  renderMeals(); renderHistory();
-  tonightPick = null;
+function swapDay(idx) {
+  const exclude = weekPlan.map(w=>w.name);
+  exclude.splice(idx,1);
+  const m = pickMeal(exclude);
+  weekPlan[idx] = { name:m.name, url:m.url||'' };
+  save(); renderWeek();
 }
 
 function renderWeek() {
   const grid = document.getElementById('week-grid');
-  if (!week) { grid.innerHTML = '<div class="empty-state">Hit the button below to plan your week.</div>'; return; }
-  const recent = recentNames();
-  grid.innerHTML = DAYS.map((d,i) => {
-    const meal = week[i];
-    return `<div class="day-row">
-      <span class="day-label">${d}</span>
-      <div class="day-info">
-        <span class="day-meal ${meal?'':'empty'}">${meal?meal.name:'not planned'}</span>
-        ${meal&&meal.url?`<a class="day-recipe-link" href="${meal.url}" target="_blank"><i class="ti ti-external-link"></i> Recipe</a>`:''}
-      </div>
-      ${meal&&recent.includes(meal.name)?'<span class="badge">recent</span>':''}
-      <button class="day-reroll" onclick="rerollDay(${i})"><i class="ti ti-refresh"></i></button>
-    </div>`;
-  }).join('');
+  if (!weekPlan) { grid.innerHTML='<div class="empty">Hit "Plan the week" to start 👆</div>'; return; }
+  grid.innerHTML = weekPlan.map((w,i)=>`
+    <div class="week-day">
+      <span class="day-label">${DAYS[i]}</span>
+      <span class="day-meal">${w.name}${w.url?` <a href="${w.url}" target="_blank">↗</a>`:''}</span>
+      <button class="day-swap" onclick="swapDay(${i})" title="Swap">↻</button>
+    </div>
+  `).join('');
 }
 
-function planWeek() {
-  if (!meals.length) return;
-  const used = [];
-  week = DAYS.map(() => { const m = pickMeal(used); if(m) used.push(m.name); return m; });
-  save(); renderWeek();
+// ── TONIGHT DROPDOWN ──
+function populateMealSelect() {
+  const sel = document.getElementById('meal-select');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— choose a meal —</option>';
+  meals.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = m.name;
+    sel.appendChild(opt);
+  });
+  // restore selection if still valid
+  if (current !== '' && meals[parseInt(current)]) sel.value = current;
 }
 
-function rerollDay(i) {
-  const used = week.filter((m,j)=>m&&j!==i).map(m=>m?m.name:null).filter(Boolean);
-  week[i] = pickMeal(used);
-  save(); renderWeek();
+function onMealSelect() {
+  const sel = document.getElementById('meal-select');
+  const idx = parseInt(sel.value);
+  if (isNaN(idx)) {
+    tonightPick = null;
+    document.getElementById('confirm-btn').style.display = 'none';
+    document.getElementById('tonight-link').style.display = 'none';
+    document.getElementById('recipe-content').innerHTML = '<p class="empty">Choose a meal above to see the recipe.</p>';
+    document.getElementById('scaler-row').style.display = 'none';
+    return;
+  }
+  const m = meals[idx];
+  tonightPick = m;
+  document.getElementById('confirm-btn').style.display = 'inline-block';
+  const lnk = document.getElementById('tonight-link');
+  if (m.url) { lnk.href = m.url; lnk.style.display = 'inline'; } else lnk.style.display = 'none';
+  fetchRecipe(m.name);
 }
 
+function confirmTonight() {
+  if (!tonightPick) return;
+  history.push({ name:tonightPick.name, ts:Date.now() });
+  save(); renderMeals();
+  document.getElementById('confirm-btn').textContent = '✓ Logged!';
+  document.getElementById('confirm-btn').disabled = true;
+  setTimeout(() => {
+    document.getElementById('confirm-btn').textContent = '✓ Log it';
+    document.getElementById('confirm-btn').disabled = false;
+  }, 2000);
+}
+
+// ── INGREDIENT PARSER ──
+function parseIngredientLine(raw) {
+  // match: optional qty (int/float/fraction), optional unit, rest=name
+  const m = raw.match(/^([\d]+(?:[\/\.][\d]+)?)\s*(g|kg|ml|l|cup|cups|tbsp|tsp|oz|lb|x)?\s+(.+)$/i);
+  if (m) {
+    let qty = m[1].includes('/') ? eval(m[1]) : parseFloat(m[1]);
+    return { raw, qty: isNaN(qty)?null:qty, unit:m[2]||'', name:m[3] };
+  }
+  return { raw, qty:null, unit:'', name:raw };
+}
+
+function fmtQty(val) {
+  if (val <= 0) return '';
+  const fracs = [[0.25,'¼'],[0.5,'½'],[0.75,'¾'],[0.33,'⅓'],[0.67,'⅔'],[0.125,'⅛']];
+  const whole = Math.floor(val);
+  const frac  = val - whole;
+  for (const [f,s] of fracs) { if (Math.abs(frac-f)<0.07) return (whole?whole:'') + s; }
+  return val % 1 === 0 ? val : Math.round(val*10)/10;
+}
+
+function scaledQty(ing, factor) {
+  if (ing.qty === null) return '';
+  return fmtQty(ing.qty * factor);
+}
+
+function renderRecipeContent(contentEl, ingredients, steps, mealName) {
+  if (!ingredients.length && !steps.length) {
+    contentEl.innerHTML = `<p class="empty">Couldn't parse recipe. <a href="https://www.google.com/search?q=${encodeURIComponent(mealName+' recipe')}" target="_blank">Search online ↗</a></p>`;
+    return;
+  }
+  const factor = currentServings / baseServings;
+  let html = '';
+  if (ingredients.length) {
+    html += `<div class="recipe-section"><h3>Ingredients</h3>`;
+    for (const ing of ingredients) {
+      const qty = ing.qty !== null ? `<strong>${scaledQty(ing,factor)}${ing.unit?' '+ing.unit:''}</strong> ` : '';
+      html += `<div class="recipe-ing">${qty}${ing.name}</div>`;
+    }
+    html += `</div>`;
+  }
+  if (steps.length) {
+    html += `<div class="recipe-section"><h3>Method</h3>`;
+    steps.forEach((s,i) => html += `<div class="recipe-step" data-n="${i+1}">${s}</div>`);
+    html += `</div>`;
+  }
+  contentEl.innerHTML = html;
+}
+
+function parseRecipeText(text) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let inI=false, inM=false;
+  const ingredients=[], steps=[];
+  let servMatch = text.match(/serves?\s*:?\s*(\d+)/i) || text.match(/(\d+)\s+serves?/i);
+  baseServings = servMatch ? parseInt(servMatch[1]) : 2;
+  currentServings = baseServings;
+  for (const line of lines) {
+    const lo=line.toLowerCase();
+    if (/^#+\s*ingredient|^ingredient/i.test(lo)) { inI=true; inM=false; continue; }
+    if (/^#+\s*(method|instruction|direction|step|how)/i.test(lo)) { inI=false; inM=true; continue; }
+    if (inI && (line.startsWith('-') || line.startsWith('*'))) {
+      ingredients.push(parseIngredientLine(line.replace(/^[-*]\s*/,'')));
+    } else if (inM && (line.match(/^\d+[\.\)]\s/) || line.startsWith('-') || line.startsWith('*'))) {
+      steps.push(line.replace(/^\d+[\.\)]\s*/,'').replace(/^[-*]\s*/,''));
+    }
+  }
+  return { ingredients, steps };
+}
+
+// ── RECIPE FETCH (Tonight) ──
+async function fetchRecipe(mealName) {
+  const loading = document.getElementById('recipe-loading');
+  const content = document.getElementById('recipe-content');
+  const scalerRow = document.getElementById('scaler-row');
+  loading.style.display = 'block';
+  content.innerHTML = '';
+  scalerRow.style.display = 'none';
+  baseIngredients = []; storedSteps = [];
+
+  try {
+    const res = await fetch('/api/recipe', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ meal:mealName })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    const { ingredients, steps } = parseRecipeText(data.recipe || data.text || '');
+    baseIngredients = ingredients;
+    storedSteps     = steps;
+    renderRecipeContent(content, ingredients, steps, mealName);
+    if (ingredients.length) {
+      scalerRow.style.display = 'block';
+      document.getElementById('scaler-num').textContent  = currentServings;
+      document.getElementById('scaler-label').textContent = `base: ${baseServings}`;
+    }
+  } catch {
+    content.innerHTML = `<p class="empty">Couldn't load recipe. <a href="https://www.google.com/search?q=${encodeURIComponent(mealName+' recipe')}" target="_blank">Search online ↗</a></p>`;
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+function adjustServings(delta) {
+  currentServings = Math.max(1, currentServings + delta);
+  document.getElementById('scaler-num').textContent = currentServings;
+  renderRecipeContent(document.getElementById('recipe-content'), baseIngredients, storedSteps, tonightPick?.name||'');
+}
+
+// ── MEALS TAB ──
 function renderMeals() {
-  const list = document.getElementById('meal-list');
-  const empty = document.getElementById('meals-empty');
-  document.getElementById('meal-count').textContent = meals.length;
-  list.querySelectorAll('.meal-row').forEach(el=>el.remove());
-  if (!meals.length) { empty.style.display=''; return; }
-  empty.style.display='none';
+  const list   = document.getElementById('meals-list');
   const recent = recentNames();
-  meals.forEach(m => {
-    const row = document.createElement('div');
-    row.className = 'meal-row';
-    const safe = m.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    row.innerHTML = `<span class="meal-name">${m.name}</span>
-      ${recent.includes(m.name)?'<span class="badge">recent</span>':''}
-      ${m.url?`<a class="meal-link" href="${m.url}" target="_blank"><i class="ti ti-external-link"></i> Recipe</a>`:''}
-      <button class="meal-del" onclick="removeMeal('${safe}')"><i class="ti ti-x"></i></button>`;
-    list.appendChild(row);
+  list.innerHTML = '';
+  meals.forEach((m,i) => {
+    const li = document.createElement('li');
+    li.className = 'meal-row' + (i===selectedMealIdx ? ' selected' : '');
+    li.onclick = () => selectMeal(i);
+    const isRecent = recent.has(m.name);
+    li.innerHTML = `
+      <span class="meal-row-name">${m.name}</span>
+      ${isRecent ? '<span class="meal-badge recent">recent</span>' : ''}
+      ${m.url ? `<a class="meal-ext" href="${m.url}" target="_blank" onclick="event.stopPropagation()">↗</a>` : ''}
+      <button class="meal-del" onclick="event.stopPropagation();removeMeal(${i})" title="Remove">✕</button>
+    `;
+    list.appendChild(li);
   });
 }
 
-function renderHistory() {
-  const el = document.getElementById('history-list');
-  if (!history.length) { el.innerHTML='<div class="empty-state">No history yet — log meals from the Tonight tab.</div>'; return; }
-  el.innerHTML=[...history].reverse().slice(0,14).map(h=>{
-    const d=new Date(h.ts);
-    const label=d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
-    return `<div class="history-row"><span class="history-date">${label}</span><span>${h.name}</span></div>`;
-  }).join('');
+async function selectMeal(idx) {
+  selectedMealIdx = idx;
+  renderMeals();
+  const m = meals[idx];
+  const preview   = document.getElementById('meal-recipe-preview');
+  const loadingEl = document.getElementById('mrp-loading');
+  const contentEl = document.getElementById('mrp-content');
+  preview.style.display = 'block';
+  document.getElementById('mrp-name').textContent = m.name;
+  const urlEl = document.getElementById('mrp-url');
+  if (m.url) { urlEl.href=m.url; urlEl.style.display='inline'; } else urlEl.style.display='none';
+  preview.scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  loadingEl.style.display = 'block';
+  contentEl.innerHTML = '';
+  try {
+    const res = await fetch('/api/recipe', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ meal:m.name })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    const { ingredients, steps } = parseRecipeText(data.recipe || data.text || '');
+    // simple render, no scaler
+    const tmpServings = currentServings; currentServings = baseServings;
+    let html='';
+    if (ingredients.length) {
+      html+=`<div class="recipe-section"><h3>Ingredients (${baseServings} serves)</h3>`;
+      ingredients.forEach(ing=>{
+        const qty = ing.qty!==null?`<strong>${fmtQty(ing.qty)}${ing.unit?' '+ing.unit:''}</strong> `:'';
+        html+=`<div class="recipe-ing">${qty}${ing.name}</div>`;
+      });
+      html+=`</div>`;
+    }
+    if (steps.length) {
+      html+=`<div class="recipe-section"><h3>Method</h3>`;
+      steps.forEach((s,i)=>{ html+=`<div class="recipe-step" data-n="${i+1}">${s}</div>`; });
+      html+=`</div>`;
+    }
+    if (!html) html=`<p class="empty">No structured recipe. <a href="https://www.google.com/search?q=${encodeURIComponent(m.name+' recipe')}" target="_blank">Search ↗</a></p>`;
+    contentEl.innerHTML = html;
+    currentServings = tmpServings;
+  } catch {
+    contentEl.innerHTML = `<p class="empty">Couldn't load recipe.</p>`;
+  } finally {
+    loadingEl.style.display='none';
+  }
 }
 
 function addMeal() {
   const inp = document.getElementById('meal-input');
   const val = inp.value.trim();
-  if (!val||meals.find(m=>m.name===val)) { inp.focus(); return; }
-  meals.push({name:val,url:''});
-  inp.value=''; save(); renderMeals(); inp.focus();
+  if (!val || meals.find(m=>m.name===val)) { inp.focus(); return; }
+  meals.push({ name:val, url:'' });
+  inp.value=''; save(); renderMeals(); populateMealSelect();
 }
 
-function removeMeal(name) { meals=meals.filter(m=>m.name!==name); save(); renderMeals(); }
-function resetMeals() { meals=DEFAULT_MEALS.map(m=>({...m})); save(); renderMeals(); }
+function removeMeal(idx) {
+  meals.splice(idx,1);
+  if (selectedMealIdx===idx) {
+    selectedMealIdx=-1;
+    document.getElementById('meal-recipe-preview').style.display='none';
+  } else if (selectedMealIdx>idx) selectedMealIdx--;
+  save(); renderMeals(); populateMealSelect();
+}
+
+function resetMeals() {
+  meals = DEFAULT_MEALS.map(m=>({...m}));
+  selectedMealIdx=-1;
+  document.getElementById('meal-recipe-preview').style.display='none';
+  save(); renderMeals(); populateMealSelect();
+}
+
+// ── HISTORY ──
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!history.length) { el.innerHTML='<div class="empty">No history yet — log meals from the Tonight tab.</div>'; return; }
+  el.innerHTML = [...history].reverse().slice(0,21).map(h=>{
+    const d = new Date(h.ts);
+    const label = d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+    return `<div class="history-row"><span class="history-date">${label}</span><span>${h.name}</span></div>`;
+  }).join('');
+}
+
 function clearHistory() { history=[]; save(); renderHistory(); renderMeals(); }
 
-const TABS = ['week','tonight','meals','history'];
+// ── TABS ──
+const TABS = ['week','tonight','recipes','history'];
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active', TABS[i]===name));
-  TABS.forEach(id => {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',TABS[i]===name));
+  TABS.forEach(id=>{
     const el = document.getElementById('tab-'+id);
-    el.style.display = id===name ? 'block' : 'none';
-    if (id===name) el.classList.add('active'); else el.classList.remove('active');
+    el.classList.toggle('active', id===name);
   });
-  if (name==='week') renderWeek();
+  if (name==='week')    renderWeek();
   if (name==='history') renderHistory();
-  if (name==='tonight' && !tonightPick) pickTonight();
+  if (name==='recipes') { renderMeals(); }
+  if (name==='tonight') populateMealSelect();
 }
 
-save(); renderMeals(); renderWeek();
-TABS.forEach(id => {
-  document.getElementById('tab-'+id).style.display = id==='week' ? 'block' : 'none';
-});
+// ── INIT ──
+save(); renderMeals(); renderWeek(); populateMealSelect();
+
+// ── BUS MAP ──
+let busMap = null;
+let busMapOpen = false;
+let vehicleMarkers = [];
+let stopMarker = null;
+let lastVehicles = [];
+let stopLatLng = null; // set from stop-predictions response if available
+
+function toggleBusMap() {
+  busMapOpen = !busMapOpen;
+  const wrap = document.getElementById('bus-map-wrap');
+  const btn  = document.getElementById('bus-map-btn');
+  wrap.style.display = busMapOpen ? 'block' : 'none';
+  btn.textContent = busMapOpen ? '🗺 Hide map' : '🗺 Show map';
+  if (busMapOpen) {
+    initMap();
+    renderVehicles(lastVehicles);
+  }
+}
+
+function initMap() {
+  if (busMap) { busMap.invalidateSize(); return; }
+  // centre on Wellington by default
+  const centre = stopLatLng || [-41.286, 174.776];
+  busMap = L.map('bus-map', { zoomControl: true, attributionControl: false }).setView(centre, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(busMap);
+  L.control.attribution({ position:'bottomright', prefix:'' })
+    .addAttribution('© <a href="https://openstreetmap.org">OSM</a>').addTo(busMap);
+
+  // add stop pin
+  if (stopLatLng) {
+    stopMarker = L.marker(stopLatLng, {
+      icon: L.divIcon({ className:'', html:'<div class="stop-marker"></div>', iconSize:[14,14], iconAnchor:[7,7] })
+    }).addTo(busMap).bindPopup('Your stop');
+  }
+}
+
+function makeBusIcon(route, bearing) {
+  const deg = bearing != null ? bearing - 45 : -45; // offset for the teardrop point
+  return L.divIcon({
+    className: '',
+    html: `<div class="bus-marker-icon" style="transform:rotate(${deg}deg)"><span class="bus-marker-label" style="transform:rotate(${45-deg+45}deg)">${route}</span></div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 22],
+    popupAnchor: [0, -22],
+  });
+}
+
+function renderVehicles(vehicles) {
+  lastVehicles = vehicles;
+  if (!busMapOpen || !busMap) return;
+
+  // clear old markers
+  vehicleMarkers.forEach(m => m.remove());
+  vehicleMarkers = [];
+
+  vehicles.forEach(v => {
+    const marker = L.marker([v.lat, v.lng], { icon: makeBusIcon(v.route, v.bearing) })
+      .addTo(busMap)
+      .bindPopup(`<strong>${v.route}</strong>${v.headsign ? '<br>' + v.headsign : ''}`);
+    vehicleMarkers.push(marker);
+  });
+
+  // fit map to show stop + all buses if we have positions
+  if (vehicles.length > 0) {
+    const points = vehicles.map(v => [v.lat, v.lng]);
+    if (stopLatLng) points.push(stopLatLng);
+    busMap.fitBounds(L.latLngBounds(points).pad(0.15));
+  }
+}
+
+// ── BUS TRACKER ──
+let busSettingsOpen = false;
+let busBackendConfigured = false; // true = env vars are set, hide manual settings
+
+function toggleBusSettings() {
+  if (busBackendConfigured) return; // nothing to configure when backend handles it
+  busSettingsOpen = !busSettingsOpen;
+  document.getElementById('bus-settings').style.display = busSettingsOpen ? 'block' : 'none';
+  document.getElementById('bus-chevron').style.transform = busSettingsOpen ? 'rotate(180deg)' : '';
+}
+
+function setBusHeader(label, sub) {
+  document.getElementById('bus-header-name').textContent = label;
+  document.getElementById('bus-header-sub').textContent  = sub;
+}
+
+function showBusDepartures() {
+  document.getElementById('bus-refresh-btn').style.display = 'inline-block';
+  document.getElementById('bus-departures').style.display  = 'block';
+}
+
+function saveBusSettings() {
+  const key    = document.getElementById('bus-apikey').value.trim();
+  const stopId = document.getElementById('bus-stopid').value.trim();
+  const label  = document.getElementById('bus-stopname').value.trim();
+  if (!key || !stopId) { alert('Please enter both an API key and a stop ID.'); return; }
+  localStorage.setItem('bus-apikey',   key);
+  localStorage.setItem('bus-stopid',   stopId);
+  localStorage.setItem('bus-stopname', label);
+  setBusHeader(label || ('Stop ' + stopId), 'Stop ' + stopId);
+  showBusDepartures();
+  busSettingsOpen = false;
+  document.getElementById('bus-settings').style.display = 'none';
+  document.getElementById('bus-chevron').style.transform = '';
+  fetchDepartures();
+}
+
+function clearBusSettings() {
+  ['bus-apikey','bus-stopid','bus-stopname'].forEach(k => localStorage.removeItem(k));
+  ['bus-apikey','bus-stopid','bus-stopname'].forEach(id => document.getElementById(id).value = '');
+  setBusHeader('My bus stop', 'tap to set up');
+  document.getElementById('bus-refresh-btn').style.display = 'none';
+  document.getElementById('bus-departures').style.display  = 'none';
+  document.getElementById('bus-list').innerHTML = '';
+}
+
+function renderDepartures(departures, list, updated, vehicles) {
+  if (!departures.length) {
+    list.innerHTML = '<div class="empty" style="padding:1rem">No departures found for this stop.</div>';
+    return;
+  }
+  list.innerHTML = departures.slice(0, 8).map(d => {
+    const dest     = d.destination?.name || d.trip?.trip_headsign || '—';
+    const route    = d.service_id || d.route_short_name || '?';
+    const aimed    = d.aimed_departure_time || d.departure?.aimed;
+    const expected = d.expected_departure_time || d.departure?.expected;
+    const useTime  = expected || aimed;
+    let minsText = '—', statusClass = '';
+    if (useTime) {
+      const mins = Math.round((new Date(useTime) - Date.now()) / 60000);
+      if (mins <= 0)      { minsText = 'Due';        statusClass = 'bus-due'; }
+      else if (mins === 1){ minsText = '1 min'; }
+      else                { minsText = mins + ' min'; }
+      if (expected && aimed) {
+        const delay = Math.round((new Date(expected) - new Date(aimed)) / 60000);
+        if (delay > 1) statusClass = 'bus-late';
+      }
+    }
+    const timeStr = useTime ? new Date(useTime).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="bus-row">
+      <span class="bus-route">${route}</span>
+      <span class="bus-dest">${dest}</span>
+      <div class="bus-time-col">
+        <span class="bus-mins ${statusClass}">${minsText}</span>
+        ${timeStr ? `<span class="bus-clock">${timeStr}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  updated.textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  // handle vehicles / map
+  const mapBtn = document.getElementById('bus-map-btn');
+  if (vehicles && vehicles.length > 0) {
+    mapBtn.style.display = 'block';
+    renderVehicles(vehicles);
+  } else {
+    mapBtn.style.display = 'none';
+  }
+}
+
+async function fetchDepartures() {
+  const loading = document.getElementById('bus-loading');
+  const list    = document.getElementById('bus-list');
+  const updated = document.getElementById('bus-updated');
+  loading.style.display = 'block';
+  list.innerHTML = '';
+
+  try {
+    if (busBackendConfigured) {
+      // ── use backend proxy (API key stays server-side) ──
+      const res = await fetch('/api/bus');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      if (json.error) throw new Error(json.error);
+      // capture stop lat/lng if the API returns it
+      if (json.data?.stop?.lat && json.data?.stop?.lng) {
+        stopLatLng = [parseFloat(json.data.stop.lat), parseFloat(json.data.stop.lng)];
+      }
+      renderDepartures(json.data?.departures || [], list, updated, json.vehicles || []);
+    } else {
+      // ── use locally stored key ──
+      const key    = localStorage.getItem('bus-apikey');
+      const stopId = localStorage.getItem('bus-stopid');
+      if (!key || !stopId) return;
+      const res = await fetch(`https://api.metlink.org.nz/api/v1/stop-predictions/${stopId}`, {
+        headers: { 'x-api-key': key, 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      renderDepartures(data.departures || [], list, updated, []);
+    }
+  } catch(e) {
+    list.innerHTML = `<div class="empty" style="padding:1rem">Couldn't load departures.<br><small style="color:var(--text3)">${e.message}</small></div>`;
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+async function loadBusSettings() {
+  // First, check if the backend has env vars configured
+  try {
+    const res  = await fetch('/api/bus');
+    const json = await res.json();
+    if (json.configured) {
+      busBackendConfigured = true;
+      setBusHeader(json.label || ('Stop ' + json.stopId), 'Stop ' + json.stopId);
+      showBusDepartures();
+      // hide the chevron/settings toggle since there's nothing to configure
+      document.getElementById('bus-chevron').style.display = 'none';
+      if (json.data?.stop?.lat && json.data?.stop?.lng) {
+        stopLatLng = [parseFloat(json.data.stop.lat), parseFloat(json.data.stop.lng)];
+      }
+      renderDepartures(json.data?.departures || [], document.getElementById('bus-list'), document.getElementById('bus-updated'), json.vehicles || []);
+      return;
+    }
+  } catch { /* backend not available or not configured, fall through */ }
+
+  // Fall back to localStorage manual settings
+  const key    = localStorage.getItem('bus-apikey')   || '';
+  const stopId = localStorage.getItem('bus-stopid')   || '';
+  const label  = localStorage.getItem('bus-stopname') || '';
+  if (key && stopId) {
+    document.getElementById('bus-apikey').value   = key;
+    document.getElementById('bus-stopid').value   = stopId;
+    document.getElementById('bus-stopname').value = label;
+    setBusHeader(label || ('Stop ' + stopId), 'Stop ' + stopId);
+    showBusDepartures();
+    fetchDepartures();
+  }
+}
+
+// auto-refresh every 60 seconds
+setInterval(() => {
+  if (busBackendConfigured || localStorage.getItem('bus-apikey')) fetchDepartures();
+}, 60000);
+
+loadBusSettings();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </body>
 </html>
