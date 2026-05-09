@@ -531,13 +531,37 @@ body {
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:20px;">🚌</span>
         <div>
-          <div style="font-size:15px;font-weight:700;">Route 24 – Miramar</div>
-          <div style="font-size:12px;color:var(--text3);">Live bus tracker</div>
+          <div style="font-size:15px;font-weight:700;" id="bus-header-name">My bus stop</div>
+          <div style="font-size:12px;color:var(--text3);" id="bus-header-sub">tap to set up</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn-outline btn-sm" id="bus-refresh-btn" onclick="fetchDepartures()" style="display:none;">↻</button>
+        <span id="bus-chevron" style="font-size:18px;color:var(--text3);cursor:pointer;transition:transform 0.2s;" onclick="toggleBusSettings()">⌄</span>
+      </div>
+    </div>
+    <div id="bus-settings" style="border-top:1px solid var(--border);padding:1rem;display:none;">
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Enter your <strong>Metlink API key</strong> (free at <a href="https://opendata.metlink.org.nz" target="_blank" style="color:var(--info);">opendata.metlink.org.nz</a>) and your stop number.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input id="bus-apikey" placeholder="API key" type="password" style="padding:8px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;outline:none;font-family:monospace;">
+        <div style="display:flex;gap:8px;">
+          <input id="bus-stopid" placeholder="Stop ID e.g. 5427" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;outline:none;">
+          <input id="bus-stopname" placeholder="Label e.g. Home stop" style="flex:1;padding:8px 10px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:14px;outline:none;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" onclick="saveBusSettings()">Save &amp; load</button>
+          <button class="btn-outline" onclick="clearBusSettings()">Clear</button>
         </div>
       </div>
     </div>
-    <div style="padding:0 1rem 1rem;">
-      <a href="https://www.metlink.org.nz/service/24" target="_blank" style="display:block;text-align:center;background:var(--accent);color:white;padding:11px;border-radius:var(--radius);font-size:14px;font-weight:600;text-decoration:none;">Open live tracker ↗</a>
+    <div id="bus-departures" style="display:none;">
+      <div id="bus-loading" class="loading-line" style="display:none;">Checking departures…</div>
+      <div id="bus-list"></div>
+      <div style="padding:0.5rem 1rem 0.75rem;font-size:11px;color:var(--text3);text-align:right;" id="bus-updated"></div>
+      <button class="bus-map-toggle" id="bus-map-btn" onclick="toggleBusMap()">🗺 Show map</button>
+      <div id="bus-map-wrap" style="display:none;">
+        <div id="bus-map"></div>
+      </div>
     </div>
   </div>
 </div>
