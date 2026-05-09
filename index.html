@@ -1026,9 +1026,13 @@ async function fetchDepartures() {
 }
 
 async function loadBusSettings() {
-  // Get config (key + stopId) from backend, then call Metlink directly from browser
+  // When on GitHub Pages, /api/bus doesn't exist — point to Vercel instead
+  const apiBase = window.location.hostname.includes('github.io')
+    ? 'https://tube-tineats.vercel.app'
+    : '';
+
   try {
-    const res  = await fetch('/api/bus');
+    const res  = await fetch(`${apiBase}/api/bus`);
     const json = await res.json();
     if (json.configured && json.apiKey && json.stopId) {
       busBackendConfigured = true;
