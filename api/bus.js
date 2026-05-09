@@ -9,56 +9,27 @@ export default async function handler(req) {
     return Response.json({ configured: false });
   }
 
-  const mlHeaders = { 'x-api-key': apiKey, 'Accept': 'application/json' };
-
   try {
     const depRes = await fetch(
       `https://api.metlink.org.nz/api/v1/stop-predictions/${stopId}`,
-      { headers: mlHeaders }
+      { headers: { 'x-api-key': apiKey, 'Accept': 'application/json' } }
     );
 
-    if (!depRes.ok) throw new Error('Metlink returned ' + depRes.status);
-    const depData = await depRes.json();
+    const rawText = await depRes.text();
 
-    // Try vehicle positions separately — don't let it crash the whole thing
-    let vehicles = [];
+    if (!depRes.ok) {
+      return Response.json({ configured: true, stopId, label, error: `HTTP ${depRes.status}`, raw: rawText.slice(0, 300) }, { status: 500 });
+    }
+
+    let depData;
     try {
-      const vpRes = await fetch(
-        'https://api.metlink.org.nz/api/v1/gtfs-rt/vehiclepositions',
-        { headers: mlHeaders }
-      );
-      if (vpRes.ok) {
-        const vpData = await vpRes.json();
-        const routeIds = new Set(
-          (depData.departures || []).map(d => d.service_id).filter(Boolean)
-        );
-        const entities = vpData.entity || vpData.Entities || [];
-        vehicles = entities
-          .filter(e => {
-            const r = e.vehicle && e.vehicle.trip &&
-              (e.vehicle.trip.route_id || e.vehicle.trip.routeId);
-            return r && routeIds.has(r);
-          })
-          .map(e => {
-            const v = e.vehicle;
-            return {
-              id:       e.id,
-              route:    (v.trip && (v.trip.route_id || v.trip.routeId)) || '?',
-              lat:      v.position && v.position.latitude,
-              lng:      v.position && v.position.longitude,
-              bearing:  v.position ? (v.position.bearing || null) : null,
-              headsign: (v.trip && v.trip.trip_headsign) || null,
-            };
-          })
-          .filter(v => v.lat && v.lng);
-      }
-    } catch (_) { /* vehicles optional */ }
+      depData = JSON.parse(rawText);
+    } catch(e) {
+      return Response.json({ configured: true, stopId, label, error: 'JSON parse failed', raw: rawText.slice(0, 300) }, { status: 500 });
+    }
 
-    return Response.json({ configured: true, stopId, label, data: depData, vehicles });
+    return Response.json({ configured: true, stopId, label, data: depData, vehicles: [], debug: Object.keys(depData) });
   } catch (e) {
-    return Response.json(
-      { configured: true, stopId, label, error: e.message },
-      { status: 500 }
-    );
+    return Response.json({ configured: true, stopId, label, error: e.message, stack: e.stack?.slice(0, 300) }, { status: 500 });
   }
 }
