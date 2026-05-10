@@ -218,7 +218,21 @@ body {
 .mf-refresh { margin-left:auto; background:none; border:none; cursor:pointer; font-size:18px; color:var(--text3); padding:0 4px; }
 .mf-refresh:hover { color:var(--accent); }
 .movies-list { padding:0 1rem 0.5rem; display:flex; flex-direction:column; gap:5px; }
-.movie-row { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:var(--bg2); border:1px solid var(--border); border-left:4px solid var(--border); }
+.movie-row { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:var(--bg2); border:1px solid var(--border); border-left:4px solid var(--border); cursor:pointer; transition: background 0.12s; }
+.movie-row:hover { background: var(--bg3); }
+.movie-row.ruby  { border-left-color:#c94c6e; }
+.movie-row.harri { border-left-color:#2e6fcc; }
+.movie-popup-wrap { padding: 0 1rem; }
+.movie-popup {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 9px;
+  padding: 10px 12px; margin-bottom: 5px; font-size: 13px; line-height: 1.5;
+  animation: slidein 0.15s ease;
+}
+.movie-popup-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+.movie-popup-bio { color: var(--text2); }
+.movie-popup-loading { color: var(--text3); font-style: italic; }
+.movie-popup-imdb { display:inline-block; margin-top:6px; font-size:11px; font-weight:700; color: var(--info); text-decoration:none; }
+.movie-popup-imdb:hover { text-decoration:underline; }
 .movie-row.ruby  { border-left-color:#c94c6e; }
 .movie-row.harri { border-left-color:#2e6fcc; }
 .movie-date { font-size:10px; color:var(--text3); font-weight:600; flex-shrink:0; width:34px; }
@@ -859,9 +873,17 @@ function parseRecipeText(text) {
     if (inI && (line.startsWith('-') || line.startsWith('*') || line.match(/^\d/))) {
       ingredients.push(parseIngredientLine(line.replace(/^[-*]\s*/,'').replace(/^\d+[\.\)]\s*/,'')));
     } else if (inM) {
-      // accept numbered steps, bullet points, or any non-header line with enough content
       const clean = line.replace(/^\d+[\.\)]\s*/,'').replace(/^[-*]\s*/,'').trim();
       if (clean.length > 8) steps.push(clean);
+    }
+  }
+  // Fallback: if we got ingredients but no steps, grab any numbered lines from the whole text
+  if (ingredients.length && !steps.length) {
+    for (const line of lines) {
+      if (/^\d+[\.\)]\s+\S/.test(line)) {
+        const clean = line.replace(/^\d+[\.\)]\s*/,'').trim();
+        if (clean.length > 8) steps.push(clean);
+      }
     }
   }
   return { ingredients, steps };
@@ -1190,18 +1212,77 @@ function renderMovieList() {
   list.innerHTML = data.map(m => {
     const isRuby = m.user === 'Ruby';
     const cls    = isRuby ? 'ruby' : 'harri';
-    const e      = getEarnings(m);
-    let earnHtml;
-    if (!m.tt)      earnHtml = `<span class="movie-earnings zero">—</span>`;
-    else if (e === null) earnHtml = `<span class="movie-earnings loading">…</span>`;
-    else if (e === 0)    earnHtml = `<span class="movie-earnings zero">$0</span>`;
-    else                 earnHtml = `<span class="movie-earnings">${fmtDollars(e)}</span>`;
-    return `<div class="movie-row ${cls}">
+    const idx    = MOVIES.indexOf(m);
+    return `<div class="movie-row ${cls}" onclick="toggleMoviePopup(${idx}, this)">
       <span class="movie-title" title="${m.title}">${m.title}</span>
       <span class="movie-chip ${cls}">${isRuby ? 'Ruby' : 'Harri'}</span>
       <span class="movie-pts">${m.date} · ${m.points}pt</span>
-    </div>`;
+    </div>
+    <div class="movie-popup-wrap" id="popup-${idx}" style="display:none"></div>`;
   }).join('');
+}
+
+const movieBioCache = {};
+
+async function toggleMoviePopup(idx, row) {
+  const wrap = document.getElementById(`popup-${idx}`);
+  if (!wrap) return;
+
+  // close if already open
+  if (wrap.style.display !== 'none') {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+
+  // close any other open popups
+  document.querySelectorAll('.movie-popup-wrap').forEach(el => {
+    el.style.display = 'none'; el.innerHTML = '';
+  });
+
+  const m = MOVIES[idx];
+  wrap.style.display = 'block';
+  const imdbLink = m.tt
+    ? `<a class="movie-popup-imdb" href="https://www.imdb.com/title/${m.tt}/" target="_blank">View on IMDb ↗</a>`
+    : '';
+
+  if (movieBioCache[idx]) {
+    wrap.innerHTML = `<div class="movie-popup">
+      <div class="movie-popup-title">${m.title}</div>
+      <div class="movie-popup-bio">${movieBioCache[idx]}</div>
+      ${imdbLink}
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = `<div class="movie-popup">
+    <div class="movie-popup-title">${m.title}</div>
+    <div class="movie-popup-bio movie-popup-loading">Loading…</div>
+  </div>`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 120,
+        messages: [{ role: 'user', content: `Give me a single sentence description of the 2026 film "${m.title}" — what it's about and who's in it. Plain text only, no punctuation at the start.` }]
+      })
+    });
+    const data = await res.json();
+    const bio = data.content?.[0]?.text?.trim() || 'No description available.';
+    movieBioCache[idx] = bio;
+    wrap.innerHTML = `<div class="movie-popup">
+      <div class="movie-popup-title">${m.title}</div>
+      <div class="movie-popup-bio">${bio}</div>
+      ${imdbLink}
+    </div>`;
+  } catch {
+    wrap.innerHTML = `<div class="movie-popup">
+      <div class="movie-popup-bio movie-popup-loading">Couldn't load description.</div>
+    </div>`;
+  }
 }
 
 // ── WEATHER ──
