@@ -675,7 +675,6 @@ body {
         </div>
         <!-- list -->
         <div class="movies-list" id="movies-list"></div>
-        <div class="movies-note">Domestic US box office via Box Office Mojo · 2026 Regulation Podcast Summer Movie Auction</div>
       </div>
     </div>
   </div>
@@ -1261,17 +1260,13 @@ async function toggleMoviePopup(idx, row) {
   </div>`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/recipe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 120,
-        messages: [{ role: 'user', content: `Give me a single sentence description of the 2026 film "${m.title}" — what it's about and who's in it. Plain text only, no punctuation at the start.` }]
-      })
+      body: JSON.stringify({ meal: `one sentence description of the 2026 film "${m.title}" — what it's about and who's in it. Plain text only.` })
     });
     const data = await res.json();
-    const bio = data.content?.[0]?.text?.trim() || 'No description available.';
+    const bio = data.recipe?.trim() || data.text?.trim() || 'No description available.';
     movieBioCache[idx] = bio;
     wrap.innerHTML = `<div class="movie-popup">
       <div class="movie-popup-title">${m.title}</div>
