@@ -1263,6 +1263,7 @@ function toggleBusMap() {
   btn.textContent = busMapOpen ? '🗺 Hide map' : '🗺 Show map';
   if (busMapOpen) {
     initMap();
+    setTimeout(() => { if (busMap) busMap.invalidateSize(); }, 50);
     renderVehicles(lastVehicles);
   }
 }
@@ -1407,11 +1408,10 @@ function renderDepartures(departures, list, updated, vehicles) {
 
   // handle vehicles / map
   const mapBtn = document.getElementById('bus-map-btn');
+  // always show map button
+  mapBtn.style.display = 'block';
   if (vehicles && vehicles.length > 0) {
-    mapBtn.style.display = 'block';
     renderVehicles(vehicles);
-  } else {
-    mapBtn.style.display = 'none';
   }
 }
 
