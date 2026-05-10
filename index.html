@@ -853,13 +853,15 @@ function parseRecipeText(text) {
   baseServings = servMatch ? parseInt(servMatch[1]) : 2;
   currentServings = baseServings;
   for (const line of lines) {
-    const lo=line.toLowerCase();
-    if (/^#+\s*ingredient|^ingredient/i.test(lo)) { inI=true; inM=false; continue; }
-    if (/^#+\s*(method|instruction|direction|step|how)/i.test(lo)) { inI=false; inM=true; continue; }
-    if (inI && (line.startsWith('-') || line.startsWith('*'))) {
-      ingredients.push(parseIngredientLine(line.replace(/^[-*]\s*/,'')));
-    } else if (inM && (line.match(/^\d+[\.\)]\s/) || line.startsWith('-') || line.startsWith('*'))) {
-      steps.push(line.replace(/^\d+[\.\)]\s*/,'').replace(/^[-*]\s*/,''));
+    const lo = line.toLowerCase().replace(/[*#_]/g,'').trim();
+    if (/^ingredients?/i.test(lo)) { inI=true; inM=false; continue; }
+    if (/^(method|instructions?|directions?|steps?|how to)/i.test(lo)) { inI=false; inM=true; continue; }
+    if (inI && (line.startsWith('-') || line.startsWith('*') || line.match(/^\d/))) {
+      ingredients.push(parseIngredientLine(line.replace(/^[-*]\s*/,'').replace(/^\d+[\.\)]\s*/,'')));
+    } else if (inM) {
+      // accept numbered steps, bullet points, or any non-header line with enough content
+      const clean = line.replace(/^\d+[\.\)]\s*/,'').replace(/^[-*]\s*/,'').trim();
+      if (clean.length > 8) steps.push(clean);
     }
   }
   return { ingredients, steps };
