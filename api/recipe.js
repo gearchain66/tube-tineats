@@ -11,18 +11,10 @@ module.exports = async function handler(req, res) {
   const mealName = req.body.meal || req.body.mealName;
   if (!mealName) return res.status(400).json({ error: 'meal required' });
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        system: `You are a recipe assistant. Given a recipe name, return ONLY a structured recipe as plain text with these exact sections in this exact format:
+  const isMovieBio = mealName.startsWith('one sentence description');
+  const system = isMovieBio
+    ? `You are a film expert. Give a single plain-text sentence about the requested film — what it's about and who stars in it. No markdown, no quotes, just the sentence.`
+    : `You are a recipe assistant. Given a recipe name, return ONLY a structured recipe as plain text with these exact sections in this exact format:
 
 Serves: 2
 
@@ -39,8 +31,22 @@ Rules:
 - You MUST include both the Ingredients section AND the Method section
 - The Method section MUST have numbered steps starting with 1.
 - Keep steps short and action-focused, max 8 steps
-- No markdown, no bold, no JSON, just plain text exactly as shown above`,
-        messages: [{ role: 'user', content: `Recipe: ${mealName}` }],
+- No markdown, no bold, no JSON, just plain text exactly as shown above`;
+  const userMsg = isMovieBio ? mealName : `Recipe: ${mealName}`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: userMsg }],
       }),
     });
 
