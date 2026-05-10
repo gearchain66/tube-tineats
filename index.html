@@ -1221,6 +1221,56 @@ function renderMovieList() {
   }).join('');
 }
 
+const MOVIE_BIOS = {
+  0:  "Two sisters embark on an epic quest for revenge, confronting a charged family history that will push them to extraordinary lengths.",
+  1:  "A star-studded heist comedy following a crew of shoplifters targeting a ruthless fashion mogul, directed by Boots Riley and starring Keke Palmer.",
+  2:  "Din Djarin and Grogu embark on their most dangerous mission yet across the galaxy in the first theatrical Star Wars film since 2019, directed by Jon Favreau and starring Pedro Pascal.",
+  3:  "A musician chases their dreams in this drama set in the competitive world of competitive music.",
+  4:  "Two ships collide in a tense survival thriller set at sea.",
+  5:  "Nicholas Galitzine plays He-Man facing off against Jared Leto's Skeletor in a battle for Castle Greyskull in this live-action adaptation of the classic toy franchise.",
+  6:  "Woody and Buzz Lightyear return as toys who must spring into action when children start replacing them with gadgets, directed by Andrew Stanton and starring Tom Hanks and Tim Allen.",
+  7:  "Johnny Knoxville and the gang return for one final round of outrageous stunts and dangerous pranks in the last-ever Jackass film.",
+  8:  "A mystery thriller about an unexpected invitation that draws a group of strangers into a dangerous game.",
+  9:  "Christopher Nolan's epic adaptation of Homer's The Odyssey, following Odysseus (Matt Damon) on his perilous journey home after the Trojan War, co-starring Zendaya, Tom Holland, and Anne Hathaway.",
+  10: "A tense thriller about someone being abruptly cut off from everything they know.",
+  11: "The sequel to the hit 2022 thriller Fall, following survivors facing new death-defying heights.",
+  12: "A drama exploring the complicated dynamics between a parent and child.",
+  13: "A darkly comedic horror film set at a summer camp.",
+  14: "Anne Hathaway and Ewan McGregor star as a family whose neighbourhood is mysteriously transported to another world filled with dinosaurs, produced by J.J. Abrams.",
+  15: "The PAW Patrol pups crash-land on a dinosaur island and must stop Mayor Humdinger from causing a volcanic eruption, featuring the voices of McKenna Grace and Jennifer Hudson.",
+  16: "Leslie Mann, Isla Fisher, Michelle Buteau and Anna Faris star in a comedy about a girls' spa weekend that goes hilariously wrong.",
+  17: "Lin Shaye returns in this sequel to Insidious: The Red Door, delving deeper into the terrifying Further.",
+  18: "A long-awaited fantasy adventure based on Enid Blyton's beloved children's novel about magical lands at the top of an enchanted tree.",
+  19: "A drama about the search for connection and identity.",
+  20: "A dark comedy about fate and the absurdity of modern life.",
+  21: "A thriller following a soldier navigating a moral crisis in a war zone.",
+  22: "Hathaway: The Sorcery of Nymph Circe continues the Mobile Suit Gundam saga, following Hathaway Noa's fight against the Earth Federation culminating in a terrorist attack on an Adelaide government conference.",
+  23: "A mystery surrounding a hidden truth that threatens to upend everything.",
+  24: "A slow-burn thriller about a passenger with a dangerous secret.",
+  25: "A high-octane action film following a group of outlaws on the run.",
+  26: "A young woman fighting to have her story heard in a world that won't listen.",
+  27: "A story about a group of friends who discover a terrifying place they can't escape.",
+  28: "A musical drama following an unlikely performer chasing a dream.",
+  29: "A horror sequel exploring new supernatural terrors.",
+  30: "Steven Spielberg's sci-fi spectacle about humanity's first undeniable proof of alien life, starring Emily Blunt, Josh O'Connor and Colin Firth.",
+  31: "A sports drama following a fighter who refuses to give up.",
+  32: "Hugh Jackman plays an older, injured vigilante reimagining of the classic outlaw hero in this action adventure.",
+  33: "Milly Alcock stars as Kara Zor-El travelling the galaxy with Krypto the Superdog on a quest for revenge, in DC Studios' second film directed by Craig Gillespie.",
+  34: "Steve Carell and Pierre Coffin return as Gru and the Minions take over 1920s Hollywood, accidentally unleashing real city-destroying monsters in this Illumination animated comedy.",
+  35: "A coming-of-age story set against the backdrop of a pivotal moment in history.",
+  36: "Young George Washington (William Franklyn-Miller) navigates early colonial America in this historical adventure featuring Ben Kingsley and Andy Serkis.",
+  37: "A comedian's rise to fame takes a dark and unexpected turn.",
+  38: "Dwayne Johnson returns as Maui alongside newcomer Catherine Laga'aia as Moana in Disney's live-action remake of the beloved 2016 animated film.",
+  39: "Tom Holland's Peter Parker returns as Spider-Man, teaming up with Bruce Banner and the Punisher to face a powerful new threat, directed by Destin Daniel Cretton.",
+  40: "A provocative drama about desire, power and the price of ambition.",
+  41: "A fast-paced action thriller set over a single high-stakes night.",
+  42: "The second chapter in the rebooted Super Troopers franchise, reuniting the original comedy troupe for more absurd law enforcement antics.",
+  43: "Matthew McConaughey stars as a bluegrass-playing Oklahoma honey maker whose empire comes under threat in this crime thriller co-starring Kurt Russell and Cole Sprouse.",
+  44: "Jason Statham stars as a man trying to clear his name and avenge his murdered billionaire boss in this action thriller.",
+  45: "Will Forte stars as a lawyer helping Wile E. Coyote sue the Acme Corporation for their faulty products in this long-awaited hybrid live-action animated comedy.",
+  46: "Jacob Elordi plays a pilot surviving in a post-apocalyptic world who follows a mysterious radio transmission in search of the last remnants of humanity, directed by Ridley Scott.",
+};
+
 const movieBioCache = {};
 
 async function toggleMoviePopup(idx, row) {
@@ -1260,23 +1310,10 @@ async function toggleMoviePopup(idx, row) {
   </div>`;
 
   try {
-    let bio = null;
+    let bio = MOVIE_BIOS[idx] || null;
 
-    // Try IMDb first if we have a tt ID
-    if (m.tt) {
-      const imdbRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.imdb.com/title/' + m.tt + '/')}`);
-      const imdbData = await imdbRes.json();
-      const html = imdbData.contents || '';
-      // IMDb puts the description in a <span data-testid="plot-xl"> or og:description
-      const ogMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
-      const plotMatch = html.match(/data-testid="plot-xl"[^>]*>([^<]+)</);
-      bio = plotMatch?.[1]?.trim() || ogMatch?.[1]?.trim() || null;
-      // Clean up any HTML entities
-      if (bio) bio = bio.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#x27;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-    }
-
-    // Fall back to AI if no tt ID or IMDb didn't return anything
     if (!bio) {
+      // AI fallback for movies we don't have a description for
       const aiRes = await fetch('/api/recipe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
