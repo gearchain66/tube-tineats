@@ -22,20 +22,24 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        system: `You are a recipe assistant. Given a recipe name, return ONLY a structured recipe as plain text with these exact sections:
+        system: `You are a recipe assistant. Given a recipe name, return ONLY a structured recipe as plain text with these exact sections in this exact format:
 
 Serves: 2
 
 Ingredients
 - [qty] [unit] [ingredient]
-- ...
+- [qty] [unit] [ingredient]
 
 Method
 1. [step]
 2. [step]
-...
+3. [step]
 
-Keep steps short and action-focused. Max 8 steps. No markdown, no JSON, just plain text.`,
+Rules:
+- You MUST include both the Ingredients section AND the Method section
+- The Method section MUST have numbered steps starting with 1.
+- Keep steps short and action-focused, max 8 steps
+- No markdown, no bold, no JSON, just plain text exactly as shown above`,
         messages: [{ role: 'user', content: `Recipe: ${mealName}` }],
       }),
     });
