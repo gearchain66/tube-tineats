@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ruby's Recipes</title>
+<title>Harri & Ruby's Website</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -179,6 +179,64 @@ body {
 
 .surfer-group   { animation: surfRide 2.4s ease-in-out infinite 0.1s; }
 .wave-scroll    { animation: waveScroll 1.8s linear infinite; }
+
+/* ── WEATHER ── */
+.weather-card {
+  background: var(--bg); border-radius: var(--radius-lg); box-shadow: var(--shadow);
+  padding: 1rem 1.1rem; margin-top: 1rem;
+  display: flex; align-items: center; gap: 14px;
+}
+.weather-icon { font-size: 36px; flex-shrink: 0; }
+.weather-info { flex: 1; }
+.weather-location { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 2px; }
+.weather-temp { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+.weather-temp span { font-size: 14px; font-weight: 500; color: var(--text2); margin-left: 4px; }
+.weather-rain { font-size: 13px; color: var(--text2); margin-top: 3px; }
+.weather-rain.yes { color: var(--info); }
+.weather-rain.no  { color: var(--green); }
+.movies-section { margin-top: 1rem; }
+.movies-card { background: var(--bg); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.movies-card-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1rem; cursor:pointer; }
+.movies-card-title { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; }
+.movies-card-chevron { font-size:18px; color:var(--text3); transition:transform 0.2s; }
+.movies-scores { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 1rem 1rem; }
+.score-card { border-radius:10px; padding:12px 14px; text-align:center; }
+.score-card.ruby  { background:#fce8ef; border:1.5px solid #c94c6e; }
+.score-card.harri { background:#e6eefa; border:1.5px solid #2e6fcc; }
+.score-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+.score-card.ruby  .score-name { color:#c94c6e; }
+.score-card.harri .score-name { color:#2e6fcc; }
+.score-pts { font-size:26px; font-weight:800; letter-spacing:-1px; }
+.score-card.ruby  .score-pts { color:#c94c6e; }
+.score-card.harri .score-pts { color:#2e6fcc; }
+.score-sub { font-size:11px; color:var(--text3); margin-top:2px; }
+.movies-filter { display:flex; gap:6px; padding:0 1rem 0.75rem; flex-wrap:wrap; align-items:center; }
+.mf-btn { padding:5px 12px; border-radius:20px; border:1.5px solid var(--border2); background:var(--bg2); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; }
+.mf-btn.active        { background:var(--accent);  color:#fff; border-color:var(--accent); }
+.mf-btn.active.ruby-f { background:#c94c6e; border-color:#c94c6e; }
+.mf-btn.active.harri-f{ background:#2e6fcc; border-color:#2e6fcc; }
+.mf-refresh { margin-left:auto; background:none; border:none; cursor:pointer; font-size:18px; color:var(--text3); padding:0 4px; }
+.mf-refresh:hover { color:var(--accent); }
+.movies-list { padding:0 1rem 0.5rem; display:flex; flex-direction:column; gap:5px; }
+.movie-row { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:var(--bg2); border:1px solid var(--border); border-left:4px solid var(--border); }
+.movie-row.ruby  { border-left-color:#c94c6e; }
+.movie-row.harri { border-left-color:#2e6fcc; }
+.movie-date { font-size:10px; color:var(--text3); font-weight:600; flex-shrink:0; width:34px; }
+.movie-title { flex:1; font-size:13px; font-weight:500; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.movie-chip { font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; }
+.movie-chip.ruby  { background:#fce8ef; color:#c94c6e; }
+.movie-chip.harri { background:#e6eefa; color:#2e6fcc; }
+.movie-earnings { font-size:12px; font-weight:700; flex-shrink:0; min-width:52px; text-align:right; color:var(--green); }
+.movie-earnings.loading { color:var(--text3); font-weight:400; }
+.movie-earnings.zero { color:var(--text3); }
+.movie-pts { font-size:11px; color:var(--text3); flex-shrink:0; min-width:28px; text-align:right; }
+.movies-note { padding:0 1rem 1rem; font-size:11px; color:var(--text3); text-align:center; }
+@media (prefers-color-scheme: dark) {
+  .score-card.ruby  { background:#3d1224; }
+  .score-card.harri { background:#0c2040; }
+  .movie-chip.ruby  { background:#3d1224; }
+  .movie-chip.harri { background:#0c2040; }
+}
 </style>
 </head>
 <body>
@@ -228,10 +286,6 @@ body {
         <ellipse cx="35" cy="50" rx="5" ry="3.5" fill="#e8dff0"/>
       </svg>
 
-      <div>
-        <h1>Ruby's Recipes</h1>
-        <p>Sun – Thu dinners 🍽️</p>
-      </div>
     </div>
 
     <!-- WHITE GOLDEN RETRIEVER -->
@@ -525,6 +579,16 @@ body {
     </svg>
   </div>
 
+  <!-- WEATHER -->
+  <div class="weather-card" id="weather-card">
+    <div class="weather-icon" id="weather-icon">⛅</div>
+    <div class="weather-info">
+      <div class="weather-location">Khandallah, Wellington</div>
+      <div class="weather-temp" id="weather-temp">—<span id="weather-high"></span></div>
+      <div class="weather-rain" id="weather-rain">Loading weather…</div>
+    </div>
+  </div>
+
   <!-- BUS TRACKER -->
   <div class="card" style="margin-top:1rem;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;">
@@ -561,6 +625,43 @@ body {
       <button class="bus-map-toggle" id="bus-map-btn" onclick="toggleBusMap()">🗺 Show map</button>
       <div id="bus-map-wrap" style="display:none;">
         <div id="bus-map"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOVIES SECTION -->
+  <div class="movies-section">
+    <div class="movies-card">
+      <div class="movies-card-header" onclick="toggleMovies()">
+        <div class="movies-card-title"><span>🎬</span><span>Summer Movie Auction 2026</span></div>
+        <span class="movies-card-chevron" id="movies-chevron" style="transform:rotate(180deg)">⌄</span>
+      </div>
+      <div id="movies-body">
+        <!-- score cards -->
+        <div class="movies-scores">
+          <div class="score-card ruby">
+            <div class="score-name">Ruby 🎀</div>
+            <div class="score-pts" id="ruby-domestic">$—</div>
+            <div class="score-sub" id="ruby-sub">— movies</div>
+          </div>
+          <div class="score-card harri">
+            <div class="score-name">Harri 🎯</div>
+            <div class="score-pts" id="harri-domestic">$—</div>
+            <div class="score-sub" id="harri-sub">— movies</div>
+          </div>
+        </div>
+        </div>
+        <!-- filters -->
+        <div class="movies-filter">
+          <button class="mf-btn active"    onclick="filterMovies('all',this)">All</button>
+          <button class="mf-btn ruby-f"    onclick="filterMovies('Ruby',this)">Ruby</button>
+          <button class="mf-btn harri-f"   onclick="filterMovies('harri',this)">Harri</button>
+          <button class="mf-btn active"    onclick="sortMovies('date',this)" id="sort-date">📅 Date</button>
+          <button class="mf-btn"           onclick="sortMovies('pts',this)"  id="sort-pts">Points</button>
+        </div>
+        <!-- list -->
+        <div class="movies-list" id="movies-list"></div>
+        <div class="movies-note">Domestic US box office via Box Office Mojo · 2026 Regulation Podcast Summer Movie Auction</div>
       </div>
     </div>
   </div>
@@ -926,7 +1027,224 @@ function switchTab(name) {
 // ── INIT ──
 save(); renderMeals(); renderWeek(); populateMealSelect();
 
-// ── BUS MAP ──
+// ── MOVIES ──
+// Auction data from regulationfan.com results URL (decoded from base64)
+// Titles & dates confirmed from Regulation Podcast 2026 Summer Movie Auction screenshots
+const MOVIES = [
+  // Ruby's picks
+  { title:'Is God Is',                                    date:'05/15', points:1,  user:'Ruby',  tt:'tt11801096' },
+  { title:'I Love Boosters',                              date:'05/22', points:3,  user:'Ruby',  tt:'tt32024898' },
+  { title:'The Mandalorian & Grogu',                      date:'05/22', points:15, user:'Ruby',  tt:'tt30825738' },
+  { title:'Tuner',                                        date:'05/29', points:5,  user:'Ruby',  tt:null },
+  { title:'Pressure',                                     date:'05/29', points:2,  user:'Ruby',  tt:null },
+  { title:'Masters of the Universe',                      date:'06/05', points:3,  user:'Ruby',  tt:'tt0291230' },
+  { title:'Toy Story 5',                                  date:'06/19', points:16, user:'Ruby',  tt:'tt29355505' },
+  { title:'Jackass 5',                                    date:'06/26', points:7,  user:'Ruby',  tt:'tt39316472' },
+  { title:'The Invite',                                   date:'06/26', points:3,  user:'Ruby',  tt:null },
+  { title:'The Odyssey',                                  date:'07/17', points:15, user:'Ruby',  tt:'tt33764258' },
+  { title:'Cut Off',                                      date:'07/17', points:1,  user:'Ruby',  tt:null },
+  { title:'Fall 2',                                       date:'08/07', points:1,  user:'Ruby',  tt:null },
+  { title:'The Third Parent',                             date:'08/07', points:1,  user:'Ruby',  tt:null },
+  { title:'Teenage Sex and Death at Camp Miasma',         date:'08/07', points:1,  user:'Ruby',  tt:null },
+  { title:'The End of Oak Street',                        date:'08/14', points:6,  user:'Ruby',  tt:null },
+  { title:'PAW Patrol: The Dino Movie',                   date:'08/14', points:8,  user:'Ruby',  tt:'tt29356163' },
+  { title:'Spa Weekend',                                  date:'08/21', points:1,  user:'Ruby',  tt:null },
+  { title:'Insidious: The Bleeding World',                date:'08/21', points:1,  user:'Ruby',  tt:null },
+  { title:'The Magic Faraway Tree',                       date:'08/21', points:3,  user:'Ruby',  tt:null },
+  { title:'Finding Emily',                                date:'08/28', points:1,  user:'Ruby',  tt:null },
+  { title:'Idiots',                                       date:'08/28', points:1,  user:'Ruby',  tt:null },
+  // Harri's picks
+  { title:'In the Grey',                                  date:'05/15', points:1,  user:'harri', tt:null },
+  { title:'Mobile Suit Gundam Hathaway: Sorcery of Nymph Circe', date:'05/15', points:1, user:'harri', tt:'tt32915652' },
+  { title:'Obsession',                                    date:'05/15', points:1,  user:'harri', tt:null },
+  { title:'Passenger',                                    date:'05/22', points:1,  user:'harri', tt:null },
+  { title:'The Furious',                                  date:'05/29', points:1,  user:'harri', tt:null },
+  { title:'The Breadwinner',                              date:'05/29', points:1,  user:'harri', tt:null },
+  { title:'Backrooms',                                    date:'05/29', points:1,  user:'harri', tt:null },
+  { title:'Power Ballad',                                 date:'06/05', points:1,  user:'harri', tt:null },
+  { title:'Scary Movie 6',                                date:'06/05', points:2,  user:'harri', tt:null },
+  { title:'Stop! That! Train!',                           date:'06/12', points:1,  user:'harri', tt:null },
+  { title:'Disclosure Day',                               date:'06/12', points:10, user:'harri', tt:'tt15047880' },
+  { title:'UFC Freedom 250',                              date:'06/14', points:1,  user:'harri', tt:null },
+  { title:'The Death of Robin Hood',                      date:'06/19', points:6,  user:'harri', tt:null },
+  { title:'Supergirl',                                    date:'06/26', points:8,  user:'harri', tt:'tt14539740' },
+  { title:'Minions & Monsters',                           date:'07/01', points:12, user:'harri', tt:'tt13230898' },
+  { title:'Thrash',                                       date:'07/03', points:1,  user:'harri', tt:null },
+  { title:'Young Washington',                             date:'07/03', points:1,  user:'harri', tt:null },
+  { title:'Gail Daughtry and the Celebrity Sex Pass',     date:'07/10', points:1,  user:'harri', tt:null },
+  { title:'Moana',                                        date:'07/10', points:10, user:'harri', tt:'tt14539740' },
+  { title:'Spider-Man: Brand New Day',                    date:'07/31', points:19, user:'harri', tt:'tt22084616' },
+  { title:'I Want Your Sex',                              date:'07/31', points:1,  user:'harri', tt:null },
+  { title:'One Night Only',                               date:'08/07', points:1,  user:'harri', tt:null },
+  { title:'Super Troopers 3',                             date:'08/07', points:3,  user:'harri', tt:null },
+  { title:'The Rivals of Amziah King',                    date:'08/21', points:7,  user:'harri', tt:null },
+  { title:'Mutiny',                                       date:'08/21', points:1,  user:'harri', tt:null },
+  { title:'Coyote vs. Acme',                              date:'08/28', points:1,  user:'harri', tt:'tt10166714' },
+  { title:'The Dog Stars',                                date:'08/28', points:4,  user:'harri', tt:null },
+];
+
+// Fetched domestic earnings cache: { tt: dollarAmount }
+let earningsCache = JSON.parse(localStorage.getItem('rr-earnings') || '{}');
+let earningsFetchedAt = parseInt(localStorage.getItem('rr-earnings-ts') || '0');
+let moviesOpen   = true;
+let moviesFilter = 'all';
+let moviesSort   = 'date';
+
+function toggleMovies() {
+  moviesOpen = !moviesOpen;
+  document.getElementById('movies-body').style.display = moviesOpen ? 'block' : 'none';
+  document.getElementById('movies-chevron').style.transform = moviesOpen ? 'rotate(180deg)' : '';
+}
+
+// ---- Fetching from Box Office Mojo ----
+async function fetchEarnings(tt) {
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.boxofficemojo.com/title/' + tt + '/')}`);
+    const data = await res.json();
+    const html = data.contents || '';
+    // Match: Domestic (XX%) $123,456,789  or  Domestic (–) –
+    const m = html.match(/Domestic[^$\-]*?([\$\-][0-9,]+|\u2013|\-)/);
+    if (!m) return null;
+    const raw = m[1].replace(/[$,]/g,'');
+    if (raw === '–' || raw === '-' || raw === '\u2013') return 0;
+    const n = parseInt(raw);
+    return isNaN(n) ? null : n;
+  } catch { return null; }
+}
+
+async function fetchAllEarnings(force=false) {
+  // Only re-fetch if >4 hours old or forced
+  const age = Date.now() - earningsFetchedAt;
+  if (!force && age < 4*60*60*1000 && Object.keys(earningsCache).length > 0) return;
+  const tts = [...new Set(MOVIES.filter(m=>m.tt).map(m=>m.tt))];
+  for (const tt of tts) {
+    const val = await fetchEarnings(tt);
+    if (val !== null) earningsCache[tt] = val;
+    // Update display as each comes in
+  }
+  earningsFetchedAt = Date.now();
+  localStorage.setItem('rr-earnings', JSON.stringify(earningsCache));
+  localStorage.setItem('rr-earnings-ts', String(earningsFetchedAt));
+}
+
+function refreshEarnings() {
+  earningsCache = {}; earningsFetchedAt = 0;
+  localStorage.removeItem('rr-earnings');
+  localStorage.removeItem('rr-earnings-ts');
+  fetchAllEarnings(true);
+}
+
+function fmtDollars(n) {
+  if (!n) return null;
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return '$' + Math.round(n/1e6) + 'M';
+  if (n >= 1e3) return '$' + Math.round(n/1e3) + 'K';
+  return '$' + n;
+}
+
+function getEarnings(movie) {
+  if (!movie.tt) return null;
+  return earningsCache[movie.tt] ?? null; // null = not fetched yet
+}
+
+// ---- Rendering ----
+function renderMovieScores() {
+  let rEarn=0, rCount=0, hEarn=0, hCount=0;
+  MOVIES.forEach(m => {
+    const e = getEarnings(m) || 0;
+    if (m.user==='Ruby') { rEarn+=e; rCount++; }
+    else                  { hEarn+=e; hCount++; }
+  });
+  document.getElementById('ruby-domestic').textContent  = fmtDollars(rEarn) || '$0';
+  document.getElementById('ruby-sub').textContent       = `${rCount} movies`;
+  document.getElementById('harri-domestic').textContent = fmtDollars(hEarn) || '$0';
+  document.getElementById('harri-sub').textContent      = `${hCount} movies`;
+}
+
+function filterMovies(f, btn) {
+  moviesFilter = f;
+  document.querySelectorAll('.mf-btn').forEach(b => {
+    if (['all','Ruby','harri'].includes(b.textContent.trim()) ||
+        b.textContent==='All') b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  renderMovieList();
+}
+
+function sortMovies(s, btn) {
+  moviesSort = s;
+  document.querySelectorAll('#sort-date,#sort-pts').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderMovieList();
+}
+
+function renderMovieList() {
+  let data = [...MOVIES];
+  if (moviesFilter !== 'all') data = data.filter(m => m.user === moviesFilter);
+  if (moviesSort === 'pts') data.sort((a,b) => b.points - a.points);
+  else data.sort((a,b) => a.date.localeCompare(b.date));
+
+  const list = document.getElementById('movies-list');
+  list.innerHTML = data.map(m => {
+    const isRuby = m.user === 'Ruby';
+    const cls    = isRuby ? 'ruby' : 'harri';
+    const e      = getEarnings(m);
+    let earnHtml;
+    if (!m.tt)      earnHtml = `<span class="movie-earnings zero">—</span>`;
+    else if (e === null) earnHtml = `<span class="movie-earnings loading">…</span>`;
+    else if (e === 0)    earnHtml = `<span class="movie-earnings zero">$0</span>`;
+    else                 earnHtml = `<span class="movie-earnings">${fmtDollars(e)}</span>`;
+    return `<div class="movie-row ${cls}">
+      <span class="movie-title" title="${m.title}">${m.title}</span>
+      <span class="movie-chip ${cls}">${isRuby ? 'Ruby' : 'Harri'}</span>
+      <span class="movie-pts">${m.date} · ${m.points}pt</span>
+    </div>`;
+  }).join('');
+}
+
+// ── WEATHER ──
+async function loadWeather() {
+  try {
+    const res = await fetch(
+      'https://api.open-meteo.com/v1/forecast?latitude=-41.2485&longitude=174.7633' +
+      '&current=temperature_2m,weathercode&daily=temperature_2m_max,precipitation_probability_max' +
+      '&timezone=Pacific%2FAuckland&forecast_days=1'
+    );
+    const d = await res.json();
+    const tempC = Math.round(d.current.temperature_2m);
+    const highC = Math.round(d.daily.temperature_2m_max[0]);
+    const rain  = d.daily.precipitation_probability_max[0];
+    const code  = d.current.weathercode;
+
+    const icon = code === 0 ? '☀️'
+      : code <= 2  ? '⛅'
+      : code <= 3  ? '☁️'
+      : code <= 49 ? '🌫️'
+      : code <= 67 ? '🌧️'
+      : code <= 77 ? '🌨️'
+      : code <= 82 ? '🌦️'
+      : code <= 99 ? '⛈️' : '🌡️';
+
+    document.getElementById('weather-icon').textContent = icon;
+    document.getElementById('weather-temp').innerHTML = `${tempC}°C<span>High ${highC}°C</span>`;
+
+    const rainEl = document.getElementById('weather-rain');
+    if (rain >= 50) {
+      rainEl.textContent = `🌧 Rain likely today (${rain}% chance)`;
+      rainEl.className = 'weather-rain yes';
+    } else if (rain >= 20) {
+      rainEl.textContent = `🌂 Possible rain (${rain}% chance)`;
+      rainEl.className = 'weather-rain yes';
+    } else {
+      rainEl.textContent = `✓ No rain expected (${rain}% chance)`;
+      rainEl.className = 'weather-rain no';
+    }
+  } catch {
+    document.getElementById('weather-rain').textContent = 'Weather unavailable';
+  }
+}
+loadWeather();
+
 let busMap = null;
 let busMapOpen = false;
 let vehicleMarkers = [];
@@ -1182,5 +1500,8 @@ setInterval(() => {
 loadBusSettings();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+renderMovieScores(); renderMovieList(); fetchAllEarnings();
+</script>
 </body>
 </html>
