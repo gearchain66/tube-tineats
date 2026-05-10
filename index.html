@@ -1260,13 +1260,32 @@ async function toggleMoviePopup(idx, row) {
   </div>`;
 
   try {
-    const res = await fetch('/api/recipe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ meal: `one sentence description of the 2026 film "${m.title}" — what it's about and who's in it. Plain text only.` })
-    });
-    const data = await res.json();
-    const bio = data.recipe?.trim() || data.text?.trim() || 'No description available.';
+    let bio = null;
+
+    // Try IMDb first if we have a tt ID
+    if (m.tt) {
+      const imdbRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.imdb.com/title/' + m.tt + '/')}`);
+      const imdbData = await imdbRes.json();
+      const html = imdbData.contents || '';
+      // IMDb puts the description in a <span data-testid="plot-xl"> or og:description
+      const ogMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+      const plotMatch = html.match(/data-testid="plot-xl"[^>]*>([^<]+)</);
+      bio = plotMatch?.[1]?.trim() || ogMatch?.[1]?.trim() || null;
+      // Clean up any HTML entities
+      if (bio) bio = bio.replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#x27;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+    }
+
+    // Fall back to AI if no tt ID or IMDb didn't return anything
+    if (!bio) {
+      const aiRes = await fetch('/api/recipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meal: `one sentence description of the 2026 film "${m.title}" — what it's about and who's in it. Plain text only.` })
+      });
+      const aiData = await aiRes.json();
+      bio = aiData.recipe?.trim() || aiData.text?.trim() || 'No description available.';
+    }
+
     movieBioCache[idx] = bio;
     wrap.innerHTML = `<div class="movie-popup">
       <div class="movie-popup-title">${m.title}</div>
