@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Harri & Ruby's Website</title>
+<title>Ruby's Recipes</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -148,6 +148,57 @@ body {
 .bus-mins.bus-late { color:#c0392b; }
 .bus-clock { font-size:11px; color:var(--text3); }
 
+/* ── MOVIES ── */
+.movies-card { background:var(--bg); border-radius:var(--radius-lg); box-shadow:var(--shadow); overflow:hidden; margin-top:1rem; }
+.movies-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1rem; cursor:pointer; }
+.movies-header-left { display:flex; align-items:center; gap:8px; }
+.movies-title { font-size:15px; font-weight:700; }
+.movies-chevron { font-size:18px; color:var(--text3); transition:transform .2s; }
+.movies-body { border-top:1px solid var(--border); }
+.movies-scores { display:flex; gap:10px; padding:1rem 1rem 0; }
+.score-card { flex:1; border-radius:var(--radius); padding:12px; text-align:center; }
+.score-card.ruby  { background:linear-gradient(135deg,#fce8f0,#f9d0e0); }
+.score-card.harri { background:linear-gradient(135deg,#e8f0fc,#d0e0f9); }
+@media (prefers-color-scheme: dark) {
+  .score-card.ruby  { background:linear-gradient(135deg,#3a1020,#2a0818); }
+  .score-card.harri { background:linear-gradient(135deg,#0a2040,#081828); }
+}
+.score-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.score-card.ruby  .score-name { color:#c0306a; }
+.score-card.harri .score-name { color:#2060c0; }
+.score-earn { font-size:22px; font-weight:800; letter-spacing:-1px; }
+.score-sub  { font-size:11px; color:var(--text2); margin-top:2px; }
+.movies-chart-wrap { padding:0.8rem 1rem 0; }
+.movies-chart-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text3); margin-bottom:6px; }
+#movies-chart { width:100%; height:120px; pointer-events:none; touch-action:pan-y; display:block; }
+.movies-filter { display:flex; gap:6px; flex-wrap:wrap; padding:0.75rem 1rem 0.5rem; align-items:center; }
+.mf-btn { padding:5px 12px; border-radius:20px; border:1.5px solid var(--border2); background:var(--bg); font-size:12px; font-weight:600; cursor:pointer; color:var(--text2); transition:.15s; }
+.mf-btn.active { background:var(--text); border-color:var(--text); color:var(--bg); }
+.mf-btn.ruby-f.active  { background:#c0306a; border-color:#c0306a; color:#fff; }
+.mf-btn.harri-f.active { background:#2060c0; border-color:#2060c0; color:#fff; }
+.mf-refresh { margin-left:auto; background:none; border:none; font-size:18px; cursor:pointer; color:var(--text3); padding:2px 4px; line-height:1; }
+.mf-refresh:hover { color:var(--text); }
+.movies-list { padding:0 1rem; }
+.movie-row { display:flex; align-items:center; gap:9px; padding:9px 0; border-bottom:1px solid var(--border); }
+.movie-row:last-child { border-bottom:none; }
+.movie-date { font-size:11px; color:var(--text3); min-width:36px; font-weight:600; flex-shrink:0; }
+.movie-title { flex:1; font-size:13px; font-weight:600; line-height:1.3; }
+.movie-owner { font-size:10px; font-weight:700; border-radius:4px; padding:2px 6px; flex-shrink:0; white-space:nowrap; }
+.movie-owner.ruby  { background:#fce8f0; color:#c0306a; }
+.movie-owner.harri { background:#e8f0fc; color:#2060c0; }
+@media (prefers-color-scheme: dark) {
+  .movie-owner.ruby  { background:#3a1020; color:#f080a0; }
+  .movie-owner.harri { background:#0a2040; color:#80b0f0; }
+}
+.movie-earn { font-size:13px; font-weight:700; min-width:52px; text-align:right; flex-shrink:0; }
+.movie-earn.earn-loading { color:var(--text3); font-weight:400; font-size:12px; }
+.movie-earn.earn-zero    { color:var(--text3); }
+.movie-earn.earn-pos     { color:var(--green); }
+.movie-earn.earn-none    { color:var(--text3); font-weight:400; }
+.movies-footer { padding:0.5rem 1rem 0.9rem; display:flex; justify-content:space-between; align-items:center; }
+.movies-updated { font-size:11px; color:var(--text3); }
+.movies-note    { font-size:11px; color:var(--text3); text-align:right; }
+
 /* ── ANIMATIONS ── */
 @keyframes bob        { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
 @keyframes dogBob     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
@@ -179,78 +230,6 @@ body {
 
 .surfer-group   { animation: surfRide 2.4s ease-in-out infinite 0.1s; }
 .wave-scroll    { animation: waveScroll 1.8s linear infinite; }
-
-/* ── WEATHER ── */
-.weather-card {
-  background: var(--bg); border-radius: var(--radius-lg); box-shadow: var(--shadow);
-  padding: 1rem 1.1rem; margin-top: 1rem;
-  display: flex; align-items: center; gap: 14px;
-}
-.weather-icon { font-size: 36px; flex-shrink: 0; }
-.weather-info { flex: 1; }
-.weather-location { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); margin-bottom: 2px; }
-.weather-temp { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
-.weather-temp span { font-size: 14px; font-weight: 500; color: var(--text2); margin-left: 4px; }
-.weather-rain { font-size: 13px; color: var(--text2); margin-top: 3px; }
-.weather-rain.yes { color: var(--info); }
-.weather-rain.no  { color: var(--green); }
-.movies-section { margin-top: 1rem; }
-.movies-card { background: var(--bg); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
-.movies-card-header { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1rem; cursor:pointer; }
-.movies-card-title { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; }
-.movies-card-chevron { font-size:18px; color:var(--text3); transition:transform 0.2s; }
-.movies-scores { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 1rem 1rem; }
-.score-card { border-radius:10px; padding:12px 14px; text-align:center; }
-.score-card.ruby  { background:#fce8ef; border:1.5px solid #c94c6e; }
-.score-card.harri { background:#e6eefa; border:1.5px solid #2e6fcc; }
-.score-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
-.score-card.ruby  .score-name { color:#c94c6e; }
-.score-card.harri .score-name { color:#2e6fcc; }
-.score-pts { font-size:26px; font-weight:800; letter-spacing:-1px; }
-.score-card.ruby  .score-pts { color:#c94c6e; }
-.score-card.harri .score-pts { color:#2e6fcc; }
-.score-sub { font-size:11px; color:var(--text3); margin-top:2px; }
-.movies-filter { display:flex; gap:6px; padding:0 1rem 0.75rem; flex-wrap:wrap; align-items:center; }
-.mf-btn { padding:5px 12px; border-radius:20px; border:1.5px solid var(--border2); background:var(--bg2); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; }
-.mf-btn.active        { background:var(--accent);  color:#fff; border-color:var(--accent); }
-.mf-btn.active.ruby-f { background:#c94c6e; border-color:#c94c6e; }
-.mf-btn.active.harri-f{ background:#2e6fcc; border-color:#2e6fcc; }
-.mf-refresh { margin-left:auto; background:none; border:none; cursor:pointer; font-size:18px; color:var(--text3); padding:0 4px; }
-.mf-refresh:hover { color:var(--accent); }
-.movies-list { padding:0 1rem 0.5rem; display:flex; flex-direction:column; gap:5px; }
-.movie-row { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px; background:var(--bg2); border:1px solid var(--border); border-left:4px solid var(--border); cursor:pointer; transition: background 0.12s; }
-.movie-row:hover { background: var(--bg3); }
-.movie-row.ruby  { border-left-color:#c94c6e; }
-.movie-row.harri { border-left-color:#2e6fcc; }
-.movie-popup-wrap { padding: 0 1rem; }
-.movie-popup {
-  background: var(--bg); border: 1px solid var(--border2); border-radius: 9px;
-  padding: 10px 12px; margin-bottom: 5px; font-size: 13px; line-height: 1.5;
-  animation: slidein 0.15s ease;
-}
-.movie-popup-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
-.movie-popup-bio { color: var(--text2); }
-.movie-popup-loading { color: var(--text3); font-style: italic; }
-.movie-popup-imdb { display:inline-block; margin-top:6px; font-size:11px; font-weight:700; color: var(--info); text-decoration:none; }
-.movie-popup-imdb:hover { text-decoration:underline; }
-.movie-row.ruby  { border-left-color:#c94c6e; }
-.movie-row.harri { border-left-color:#2e6fcc; }
-.movie-date { font-size:10px; color:var(--text3); font-weight:600; flex-shrink:0; width:34px; }
-.movie-title { flex:1; font-size:13px; font-weight:500; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.movie-chip { font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; flex-shrink:0; }
-.movie-chip.ruby  { background:#fce8ef; color:#c94c6e; }
-.movie-chip.harri { background:#e6eefa; color:#2e6fcc; }
-.movie-earnings { font-size:12px; font-weight:700; flex-shrink:0; min-width:52px; text-align:right; color:var(--green); }
-.movie-earnings.loading { color:var(--text3); font-weight:400; }
-.movie-earnings.zero { color:var(--text3); }
-.movie-pts { font-size:11px; color:var(--text3); flex-shrink:0; min-width:28px; text-align:right; }
-.movies-note { padding:0 1rem 1rem; font-size:11px; color:var(--text3); text-align:center; }
-@media (prefers-color-scheme: dark) {
-  .score-card.ruby  { background:#3d1224; }
-  .score-card.harri { background:#0c2040; }
-  .movie-chip.ruby  { background:#3d1224; }
-  .movie-chip.harri { background:#0c2040; }
-}
 </style>
 </head>
 <body>
@@ -300,6 +279,10 @@ body {
         <ellipse cx="35" cy="50" rx="5" ry="3.5" fill="#e8dff0"/>
       </svg>
 
+      <div>
+        <h1>Ruby's Recipes</h1>
+        <p>Sun – Thu dinners 🍽️</p>
+      </div>
     </div>
 
     <!-- WHITE GOLDEN RETRIEVER -->
@@ -593,16 +576,6 @@ body {
     </svg>
   </div>
 
-  <!-- WEATHER -->
-  <div class="weather-card" id="weather-card">
-    <div class="weather-icon" id="weather-icon">⛅</div>
-    <div class="weather-info">
-      <div class="weather-location">Khandallah, Wellington</div>
-      <div class="weather-temp" id="weather-temp">—<span id="weather-high"></span></div>
-      <div class="weather-rain" id="weather-rain">Loading weather…</div>
-    </div>
-  </div>
-
   <!-- BUS TRACKER -->
   <div class="card" style="margin-top:1rem;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;">
@@ -642,44 +615,54 @@ body {
       </div>
     </div>
   </div>
-
-  <!-- MOVIES SECTION -->
-  <div class="movies-section">
-    <div class="movies-card">
-      <div class="movies-card-header" onclick="toggleMovies()">
-        <div class="movies-card-title"><span>🎬</span><span>Summer Movie Auction 2026</span></div>
-        <span class="movies-card-chevron" id="movies-chevron" style="transform:rotate(180deg)">⌄</span>
+  <!-- MOVIES -->
+  <div class="movies-card">
+    <div class="movies-header" onclick="toggleMovies()">
+      <div class="movies-header-left">
+        <span style="font-size:20px;">🎬</span>
+        <div>
+          <div class="movies-title">Summer Movie Auction 2026</div>
+          <div style="font-size:12px;color:var(--text3);">Regulation Podcast · domestic US box office</div>
+        </div>
       </div>
-      <div id="movies-body">
-        <!-- score cards -->
-        <div class="movies-scores">
-          <div class="score-card ruby">
-            <div class="score-name">Ruby 🎀</div>
-            <div class="score-pts" id="ruby-domestic">$—</div>
-            <div class="score-sub" id="ruby-sub">— movies</div>
-          </div>
-          <div class="score-card harri">
-            <div class="score-name">Harri 🎯</div>
-            <div class="score-pts" id="harri-domestic">$—</div>
-            <div class="score-sub" id="harri-sub">— movies</div>
-          </div>
+      <span class="movies-chevron" id="movies-chevron">⌄</span>
+    </div>
+    <div class="movies-body" id="movies-body" style="display:none;">
+      <div class="movies-scores">
+        <div class="score-card ruby">
+          <div class="score-name">Ruby 🎀</div>
+          <div class="score-earn" id="ruby-earn">$—</div>
+          <div class="score-sub" id="ruby-sub">loading…</div>
         </div>
+        <div class="score-card harri">
+          <div class="score-name">Harri 🎯</div>
+          <div class="score-earn" id="harri-earn">$—</div>
+          <div class="score-sub" id="harri-sub">loading…</div>
         </div>
-        <!-- filters -->
-        <div class="movies-filter">
-          <button class="mf-btn active"    onclick="filterMovies('all',this)">All</button>
-          <button class="mf-btn ruby-f"    onclick="filterMovies('Ruby',this)">Ruby</button>
-          <button class="mf-btn harri-f"   onclick="filterMovies('harri',this)">Harri</button>
-          <button class="mf-btn active"    onclick="sortMovies('date',this)" id="sort-date">📅 Date</button>
-          <button class="mf-btn"           onclick="sortMovies('pts',this)"  id="sort-pts">Points</button>
-        </div>
-        <!-- list -->
-        <div class="movies-list" id="movies-list"></div>
+      </div>
+      <div class="movies-chart-wrap">
+        <div class="movies-chart-title">Cumulative domestic earnings over the summer</div>
+        <canvas id="movies-chart"></canvas>
+      </div>
+      <div class="movies-filter">
+        <button class="mf-btn active" onclick="filterMovies('all',this)">All</button>
+        <button class="mf-btn ruby-f"  onclick="filterMovies('Ruby',this)">Ruby</button>
+        <button class="mf-btn harri-f" onclick="filterMovies('Harri',this)">Harri</button>
+        <button class="mf-btn" id="sort-date-btn" onclick="sortMovies('date')">📅 Date</button>
+        <button class="mf-btn" id="sort-earn-btn" onclick="sortMovies('earn')">💰 Earnings</button>
+        <button class="mf-refresh" onclick="event.stopPropagation();refreshEarnings()" title="Refresh box office">↻</button>
+      </div>
+      <div class="movies-list" id="movies-list"></div>
+      <div class="movies-footer">
+        <span class="movies-updated" id="movies-updated"></span>
+        <span class="movies-note">via Box Office Mojo</span>
       </div>
     </div>
   </div>
+
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const DAYS = ['Sun','Mon','Tue','Wed','Thu'];
 
@@ -866,23 +849,13 @@ function parseRecipeText(text) {
   baseServings = servMatch ? parseInt(servMatch[1]) : 2;
   currentServings = baseServings;
   for (const line of lines) {
-    const lo = line.toLowerCase().replace(/[*#_]/g,'').trim();
-    if (/^ingredients?/i.test(lo)) { inI=true; inM=false; continue; }
-    if (/^(method|instructions?|directions?|steps?|how to)/i.test(lo)) { inI=false; inM=true; continue; }
-    if (inI && (line.startsWith('-') || line.startsWith('*') || line.match(/^\d/))) {
-      ingredients.push(parseIngredientLine(line.replace(/^[-*]\s*/,'').replace(/^\d+[\.\)]\s*/,'')));
-    } else if (inM) {
-      const clean = line.replace(/^\d+[\.\)]\s*/,'').replace(/^[-*]\s*/,'').trim();
-      if (clean.length > 8) steps.push(clean);
-    }
-  }
-  // Fallback: if we got ingredients but no steps, grab any numbered lines from the whole text
-  if (ingredients.length && !steps.length) {
-    for (const line of lines) {
-      if (/^\d+[\.\)]\s+\S/.test(line)) {
-        const clean = line.replace(/^\d+[\.\)]\s*/,'').trim();
-        if (clean.length > 8) steps.push(clean);
-      }
+    const lo=line.toLowerCase();
+    if (/^#+\s*ingredient|^ingredient/i.test(lo)) { inI=true; inM=false; continue; }
+    if (/^#+\s*(method|instruction|direction|step|how)/i.test(lo)) { inI=false; inM=true; continue; }
+    if (inI && (line.startsWith('-') || line.startsWith('*'))) {
+      ingredients.push(parseIngredientLine(line.replace(/^[-*]\s*/,'')));
+    } else if (inM && (line.match(/^\d+[\.\)]\s/) || line.startsWith('-') || line.startsWith('*'))) {
+      steps.push(line.replace(/^\d+[\.\)]\s*/,'').replace(/^[-*]\s*/,''));
     }
   }
   return { ingredients, steps };
@@ -1051,334 +1024,289 @@ function switchTab(name) {
 save(); renderMeals(); renderWeek(); populateMealSelect();
 
 // ── MOVIES ──
-// Auction data from regulationfan.com results URL (decoded from base64)
-// Titles & dates confirmed from Regulation Podcast 2026 Summer Movie Auction screenshots
 const MOVIES = [
   // Ruby's picks
-  { title:'Is God Is',                                    date:'05/15', points:1,  user:'Ruby',  tt:'tt11801096' },
-  { title:'I Love Boosters',                              date:'05/22', points:3,  user:'Ruby',  tt:'tt32024898' },
-  { title:'The Mandalorian & Grogu',                      date:'05/22', points:15, user:'Ruby',  tt:'tt30825738' },
-  { title:'Tuner',                                        date:'05/29', points:5,  user:'Ruby',  tt:null },
-  { title:'Pressure',                                     date:'05/29', points:2,  user:'Ruby',  tt:null },
-  { title:'Masters of the Universe',                      date:'06/05', points:3,  user:'Ruby',  tt:'tt0291230' },
-  { title:'Toy Story 5',                                  date:'06/19', points:16, user:'Ruby',  tt:'tt29355505' },
-  { title:'Jackass 5',                                    date:'06/26', points:7,  user:'Ruby',  tt:'tt39316472' },
-  { title:'The Invite',                                   date:'06/26', points:3,  user:'Ruby',  tt:null },
-  { title:'The Odyssey',                                  date:'07/17', points:15, user:'Ruby',  tt:'tt33764258' },
-  { title:'Cut Off',                                      date:'07/17', points:1,  user:'Ruby',  tt:null },
-  { title:'Fall 2',                                       date:'08/07', points:1,  user:'Ruby',  tt:null },
-  { title:'The Third Parent',                             date:'08/07', points:1,  user:'Ruby',  tt:null },
-  { title:'Teenage Sex and Death at Camp Miasma',         date:'08/07', points:1,  user:'Ruby',  tt:null },
-  { title:'The End of Oak Street',                        date:'08/14', points:6,  user:'Ruby',  tt:null },
-  { title:'PAW Patrol: The Dino Movie',                   date:'08/14', points:8,  user:'Ruby',  tt:'tt29356163' },
-  { title:'Spa Weekend',                                  date:'08/21', points:1,  user:'Ruby',  tt:null },
-  { title:'Insidious: The Bleeding World',                date:'08/21', points:1,  user:'Ruby',  tt:null },
-  { title:'The Magic Faraway Tree',                       date:'08/21', points:3,  user:'Ruby',  tt:null },
-  { title:'Finding Emily',                                date:'08/28', points:1,  user:'Ruby',  tt:null },
-  { title:'Idiots',                                       date:'08/28', points:1,  user:'Ruby',  tt:null },
+  { title:'Is God Is',                  date:'2026-05-15', pts:1,  user:'Ruby',  tt:'tt11801096' },
+  { title:'I Love Boosters',            date:'2026-05-22', pts:3,  user:'Ruby',  tt:null },
+  { title:'The Mandalorian & Grogu',    date:'2026-05-22', pts:15, user:'Ruby',  tt:'tt30825738' },
+  { title:'Tuner',                      date:'2026-05-29', pts:5,  user:'Ruby',  tt:null },
+  { title:'Pressure',                   date:'2026-05-29', pts:2,  user:'Ruby',  tt:null },
+  { title:'Masters of the Universe',    date:'2026-06-05', pts:3,  user:'Ruby',  tt:'tt0291230'  },
+  { title:'Toy Story 5',                date:'2026-06-19', pts:16, user:'Ruby',  tt:'tt29355505' },
+  { title:'Jackass 5',                  date:'2026-06-26', pts:7,  user:'Ruby',  tt:'tt39316472' },
+  { title:'The Invite',                 date:'2026-06-26', pts:3,  user:'Ruby',  tt:null },
+  { title:'The Odyssey',                date:'2026-07-17', pts:15, user:'Ruby',  tt:'tt14039722' },
+  { title:'Cut Off',                    date:'2026-07-17', pts:1,  user:'Ruby',  tt:null },
+  { title:'Spider-Man: Brand New Day',  date:'2026-07-24', pts:14, user:'Ruby',  tt:'tt22084616' },
+  { title:'Moana',                      date:'2026-07-31', pts:4,  user:'Ruby',  tt:null },
+  { title:'Backrooms',                  date:'2026-08-07', pts:3,  user:'Ruby',  tt:null },
+  { title:'Beetlejuice Beetlejuice 2',  date:'2026-09-05', pts:2,  user:'Ruby',  tt:null },
   // Harri's picks
-  { title:'In the Grey',                                  date:'05/15', points:1,  user:'harri', tt:null },
-  { title:'Mobile Suit Gundam Hathaway: Sorcery of Nymph Circe', date:'05/15', points:1, user:'harri', tt:'tt32915652' },
-  { title:'Obsession',                                    date:'05/15', points:1,  user:'harri', tt:null },
-  { title:'Passenger',                                    date:'05/22', points:1,  user:'harri', tt:null },
-  { title:'The Furious',                                  date:'05/29', points:1,  user:'harri', tt:null },
-  { title:'The Breadwinner',                              date:'05/29', points:1,  user:'harri', tt:null },
-  { title:'Backrooms',                                    date:'05/29', points:1,  user:'harri', tt:null },
-  { title:'Power Ballad',                                 date:'06/05', points:1,  user:'harri', tt:null },
-  { title:'Scary Movie 6',                                date:'06/05', points:2,  user:'harri', tt:null },
-  { title:'Stop! That! Train!',                           date:'06/12', points:1,  user:'harri', tt:null },
-  { title:'Disclosure Day',                               date:'06/12', points:10, user:'harri', tt:'tt15047880' },
-  { title:'UFC Freedom 250',                              date:'06/14', points:1,  user:'harri', tt:null },
-  { title:'The Death of Robin Hood',                      date:'06/19', points:6,  user:'harri', tt:null },
-  { title:'Supergirl',                                    date:'06/26', points:8,  user:'harri', tt:'tt14539740' },
-  { title:'Minions & Monsters',                           date:'07/01', points:12, user:'harri', tt:'tt13230898' },
-  { title:'Thrash',                                       date:'07/03', points:1,  user:'harri', tt:null },
-  { title:'Young Washington',                             date:'07/03', points:1,  user:'harri', tt:null },
-  { title:'Gail Daughtry and the Celebrity Sex Pass',     date:'07/10', points:1,  user:'harri', tt:null },
-  { title:'Moana',                                        date:'07/10', points:10, user:'harri', tt:'tt14539740' },
-  { title:'Spider-Man: Brand New Day',                    date:'07/31', points:19, user:'harri', tt:'tt22084616' },
-  { title:'I Want Your Sex',                              date:'07/31', points:1,  user:'harri', tt:null },
-  { title:'One Night Only',                               date:'08/07', points:1,  user:'harri', tt:null },
-  { title:'Super Troopers 3',                             date:'08/07', points:3,  user:'harri', tt:null },
-  { title:'The Rivals of Amziah King',                    date:'08/21', points:7,  user:'harri', tt:null },
-  { title:'Mutiny',                                       date:'08/21', points:1,  user:'harri', tt:null },
-  { title:'Coyote vs. Acme',                              date:'08/28', points:1,  user:'harri', tt:'tt10166714' },
-  { title:'The Dog Stars',                                date:'08/28', points:4,  user:'harri', tt:null },
+  { title:'Mortal Kombat II',           date:'2026-05-08', pts:8,  user:'Harri', tt:'tt17490712' },
+  { title:'The Sheep Detectives',       date:'2026-05-08', pts:6,  user:'Harri', tt:'tt29356163' },
+  { title:'The Breadwinner',            date:'2026-05-29', pts:3,  user:'Harri', tt:null },
+  { title:'Scary Movie 6',              date:'2026-06-05', pts:5,  user:'Harri', tt:null },
+  { title:'Disclosure Day',             date:'2026-06-12', pts:7,  user:'Harri', tt:'tt15047880' },
+  { title:'Amazing Digital Circus',     date:'2026-06-05', pts:4,  user:'Harri', tt:null },
+  { title:'Supergirl: Woman of Tomorrow',date:'2026-06-26', pts:6, user:'Harri', tt:null },
+  { title:'Gundam',                     date:'2026-07-10', pts:3,  user:'Harri', tt:'tt32915652' },
+  { title:'PAW Patrol: Dino Rescue',    date:'2026-07-31', pts:4,  user:'Harri', tt:null },
+  { title:'Minions & Monsters',         date:'2026-08-14', pts:5,  user:'Harri', tt:null },
+  { title:'Hokum',                      date:'2026-08-21', pts:2,  user:'Harri', tt:null },
 ];
 
-// Fetched domestic earnings cache: { tt: dollarAmount }
-let earningsCache = JSON.parse(localStorage.getItem('rr-earnings') || '{}');
-let earningsFetchedAt = parseInt(localStorage.getItem('rr-earnings-ts') || '0');
-let moviesOpen   = true;
-let moviesFilter = 'all';
-let moviesSort   = 'date';
+// Seed with confirmed earnings as of May 23 2026.
+// These get overwritten when a fresh fetch succeeds.
+const SEED = {
+  'tt17490712': 64872756,   // Mortal Kombat II — $64.9M (2 wks, BOM confirmed)
+  'tt29356163': 34500000,   // The Sheep Detectives — ~$34.5M (2 wks)
+  'tt11801096': 2200000,    // Is God Is — $2.2M opening wkd
+  'tt30825738': 12000000,   // Mandalorian & Grogu — previews only (opens this wkd)
+};
+
+let earningsCache = {};
+let earningsFetchedAt = 0;
+let moviesOpen = false;
+let movieFilter = 'all';
+let movieSort = 'date';
+let movieChart = null;
+
+// Restore from localStorage
+try {
+  const c = localStorage.getItem('rr-bo-v3');
+  const t = localStorage.getItem('rr-bo-v3-ts');
+  if (c) { earningsCache = JSON.parse(c); earningsFetchedAt = parseInt(t||'0'); }
+} catch(e) {}
+
+// Merge seed only for keys not already in cache
+for (const [tt, val] of Object.entries(SEED)) {
+  if (earningsCache[tt] === undefined) earningsCache[tt] = val;
+}
 
 function toggleMovies() {
   moviesOpen = !moviesOpen;
-  document.getElementById('movies-body').style.display = moviesOpen ? 'block' : 'none';
+  document.getElementById('movies-body').style.display    = moviesOpen ? 'block' : 'none';
   document.getElementById('movies-chevron').style.transform = moviesOpen ? 'rotate(180deg)' : '';
+  if (moviesOpen) {
+    renderMovieScores();
+    renderMovieList();
+    renderMovieChart();
+    fetchAllEarnings();
+  }
 }
 
-// ---- Fetching from Box Office Mojo ----
-async function fetchEarnings(tt) {
+// ── FETCH via Vercel serverless ──
+async function fetchOneEarning(tt) {
   try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://www.boxofficemojo.com/title/' + tt + '/')}`);
+    const res = await fetch(`/api/boxoffice?tt=${tt}`);
+    if (!res.ok) return null;
     const data = await res.json();
-    const html = data.contents || '';
-    // Match: Domestic (XX%) $123,456,789  or  Domestic (–) –
-    const m = html.match(/Domestic[^$\-]*?([\$\-][0-9,]+|\u2013|\-)/);
-    if (!m) return null;
-    const raw = m[1].replace(/[$,]/g,'');
-    if (raw === '–' || raw === '-' || raw === '\u2013') return 0;
-    const n = parseInt(raw);
-    return isNaN(n) ? null : n;
+    return (data.domestic !== undefined && data.domestic !== null) ? data.domestic : null;
   } catch { return null; }
 }
 
-async function fetchAllEarnings(force=false) {
-  // Only re-fetch if >4 hours old or forced
+async function fetchAllEarnings(force = false) {
   const age = Date.now() - earningsFetchedAt;
-  if (!force && age < 4*60*60*1000 && Object.keys(earningsCache).length > 0) return;
-  const tts = [...new Set(MOVIES.filter(m=>m.tt).map(m=>m.tt))];
+  // Re-fetch if forced, or cache is older than 3 hours
+  if (!force && age < 3 * 60 * 60 * 1000 && Object.keys(earningsCache).length > 0) return;
+
+  const tts = [...new Set(MOVIES.filter(m => m.tt).map(m => m.tt))];
+  let anyNew = false;
+
   for (const tt of tts) {
-    const val = await fetchEarnings(tt);
-    if (val !== null) earningsCache[tt] = val;
+    const val = await fetchOneEarning(tt);
+    if (val !== null) {
+      earningsCache[tt] = val;
+      anyNew = true;
+    }
     // Update display as each comes in
+    renderMovieScores();
+    renderMovieList();
+    renderMovieChart();
   }
+
   earningsFetchedAt = Date.now();
-  localStorage.setItem('rr-earnings', JSON.stringify(earningsCache));
-  localStorage.setItem('rr-earnings-ts', String(earningsFetchedAt));
+  try {
+    localStorage.setItem('rr-bo-v3', JSON.stringify(earningsCache));
+    localStorage.setItem('rr-bo-v3-ts', String(earningsFetchedAt));
+  } catch(e) {}
+
+  const el = document.getElementById('movies-updated');
+  if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
 function refreshEarnings() {
-  earningsCache = {}; earningsFetchedAt = 0;
-  localStorage.removeItem('rr-earnings');
-  localStorage.removeItem('rr-earnings-ts');
+  earningsFetchedAt = 0;
   fetchAllEarnings(true);
 }
 
+function getEarnings(movie) {
+  if (!movie.tt) return undefined; // no tt = not trackable
+  const v = earningsCache[movie.tt];
+  return v; // number or undefined
+}
+
 function fmtDollars(n) {
-  if (!n) return null;
-  if (n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
-  if (n >= 1e6) return '$' + Math.round(n/1e6) + 'M';
+  if (n === undefined) return null;
+  if (n === 0) return '$0';
+  if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
   if (n >= 1e3) return '$' + Math.round(n/1e3) + 'K';
   return '$' + n;
 }
 
-function getEarnings(movie) {
-  if (!movie.tt) return null;
-  return earningsCache[movie.tt] ?? null; // null = not fetched yet
-}
-
-// ---- Rendering ----
-function renderMovieScores() {
-  let rEarn=0, rCount=0, hEarn=0, hCount=0;
-  MOVIES.forEach(m => {
-    const e = getEarnings(m) || 0;
-    if (m.user==='Ruby') { rEarn+=e; rCount++; }
-    else                  { hEarn+=e; hCount++; }
-  });
-  document.getElementById('ruby-domestic').textContent  = fmtDollars(rEarn) || '$0';
-  document.getElementById('ruby-sub').textContent       = `${rCount} movies`;
-  document.getElementById('harri-domestic').textContent = fmtDollars(hEarn) || '$0';
-  document.getElementById('harri-sub').textContent      = `${hCount} movies`;
-}
-
 function filterMovies(f, btn) {
-  moviesFilter = f;
+  movieFilter = f;
   document.querySelectorAll('.mf-btn').forEach(b => {
-    if (['all','Ruby','harri'].includes(b.textContent.trim()) ||
-        b.textContent==='All') b.classList.remove('active');
+    const isFilter = ['all','Ruby','Harri'].includes(b.textContent.trim()) || b.textContent.includes('All') || b.textContent.includes('Ruby') || b.textContent.includes('Harri');
+    if (b.classList.contains('ruby-f') || b.classList.contains('harri-f') || b.textContent.trim() === 'All') {
+      b.classList.remove('active');
+    }
   });
   btn.classList.add('active');
   renderMovieList();
+  renderMovieChart();
 }
 
-function sortMovies(s, btn) {
-  moviesSort = s;
-  document.querySelectorAll('#sort-date,#sort-pts').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+function sortMovies(by) {
+  movieSort = by;
+  document.getElementById('sort-date-btn').classList.toggle('active', by === 'date');
+  document.getElementById('sort-earn-btn').classList.toggle('active', by === 'earn');
   renderMovieList();
 }
 
-function renderMovieList() {
-  let data = [...MOVIES];
-  if (moviesFilter !== 'all') data = data.filter(m => m.user === moviesFilter);
-  if (moviesSort === 'pts') data.sort((a,b) => b.points - a.points);
-  else data.sort((a,b) => a.date.localeCompare(b.date));
+function getVisibleMovies() {
+  let list = MOVIES.filter(m => {
+    if (movieFilter === 'Ruby')  return m.user === 'Ruby';
+    if (movieFilter === 'Harri') return m.user === 'Harri';
+    return true;
+  });
+  if (movieSort === 'earn') {
+    list = [...list].sort((a,b) => {
+      const ea = getEarnings(a) ?? -1;
+      const eb = getEarnings(b) ?? -1;
+      return eb - ea;
+    });
+  } else {
+    list = [...list].sort((a,b) => a.date.localeCompare(b.date));
+  }
+  return list;
+}
 
-  const list = document.getElementById('movies-list');
-  list.innerHTML = data.map(m => {
-    const isRuby = m.user === 'Ruby';
-    const cls    = isRuby ? 'ruby' : 'harri';
-    const idx    = MOVIES.indexOf(m);
-    return `<div class="movie-row ${cls}" onclick="toggleMoviePopup(${idx}, this)">
-      <span class="movie-title" title="${m.title}">${m.title}</span>
-      <span class="movie-chip ${cls}">${isRuby ? 'Ruby' : 'Harri'}</span>
-      <span class="movie-pts">${m.date} · ${m.points}pt</span>
-    </div>
-    <div class="movie-popup-wrap" id="popup-${idx}" style="display:none"></div>`;
+function renderMovieList() {
+  const el = document.getElementById('movies-list');
+  if (!el) return;
+  const today = new Date().toISOString().slice(0,10);
+  el.innerHTML = getVisibleMovies().map(m => {
+    const earn = getEarnings(m);
+    const released = m.date <= today;
+    let earnHtml, earnClass;
+    if (!m.tt) {
+      earnHtml = '—'; earnClass = 'earn-none';
+    } else if (!released) {
+      earnHtml = '—'; earnClass = 'earn-none';
+    } else if (earn === undefined) {
+      earnHtml = '…'; earnClass = 'earn-loading';
+    } else if (earn === 0) {
+      earnHtml = '$0'; earnClass = 'earn-zero';
+    } else {
+      earnHtml = fmtDollars(earn); earnClass = 'earn-pos';
+    }
+    const dateLabel = m.date.slice(5).replace('-','/'); // MM/DD
+    return `<div class="movie-row">
+      <span class="movie-date">${dateLabel}</span>
+      <span class="movie-title">${m.title}</span>
+      <span class="movie-owner ${m.user.toLowerCase()}">${m.user}</span>
+      <span class="movie-earn ${earnClass}">${earnHtml}</span>
+    </div>`;
   }).join('');
 }
 
-const MOVIE_BIOS = {
-  0:  "Two sisters embark on an epic quest for revenge, confronting a charged family history that will push them to extraordinary lengths.",
-  1:  "A star-studded heist comedy following a crew of shoplifters targeting a ruthless fashion mogul, directed by Boots Riley and starring Keke Palmer.",
-  2:  "Din Djarin and Grogu embark on their most dangerous mission yet across the galaxy in the first theatrical Star Wars film since 2019, directed by Jon Favreau and starring Pedro Pascal.",
-  3:  "A musician chases their dreams in this drama set in the competitive world of competitive music.",
-  4:  "Two ships collide in a tense survival thriller set at sea.",
-  5:  "Nicholas Galitzine plays He-Man facing off against Jared Leto's Skeletor in a battle for Castle Greyskull in this live-action adaptation of the classic toy franchise.",
-  6:  "Woody and Buzz Lightyear return as toys who must spring into action when children start replacing them with gadgets, directed by Andrew Stanton and starring Tom Hanks and Tim Allen.",
-  7:  "Johnny Knoxville and the gang return for one final round of outrageous stunts and dangerous pranks in the last-ever Jackass film.",
-  8:  "A mystery thriller about an unexpected invitation that draws a group of strangers into a dangerous game.",
-  9:  "Christopher Nolan's epic adaptation of Homer's The Odyssey, following Odysseus (Matt Damon) on his perilous journey home after the Trojan War, co-starring Zendaya, Tom Holland, and Anne Hathaway.",
-  10: "A tense thriller about someone being abruptly cut off from everything they know.",
-  11: "The sequel to the hit 2022 thriller Fall, following survivors facing new death-defying heights.",
-  12: "A drama exploring the complicated dynamics between a parent and child.",
-  13: "A darkly comedic horror film set at a summer camp.",
-  14: "Anne Hathaway and Ewan McGregor star as a family whose neighbourhood is mysteriously transported to another world filled with dinosaurs, produced by J.J. Abrams.",
-  15: "The PAW Patrol pups crash-land on a dinosaur island and must stop Mayor Humdinger from causing a volcanic eruption, featuring the voices of McKenna Grace and Jennifer Hudson.",
-  16: "Leslie Mann, Isla Fisher, Michelle Buteau and Anna Faris star in a comedy about a girls' spa weekend that goes hilariously wrong.",
-  17: "Lin Shaye returns in this sequel to Insidious: The Red Door, delving deeper into the terrifying Further.",
-  18: "A long-awaited fantasy adventure based on Enid Blyton's beloved children's novel about magical lands at the top of an enchanted tree.",
-  19: "A drama about the search for connection and identity.",
-  20: "A dark comedy about fate and the absurdity of modern life.",
-  21: "A thriller following a soldier navigating a moral crisis in a war zone.",
-  22: "Hathaway: The Sorcery of Nymph Circe continues the Mobile Suit Gundam saga, following Hathaway Noa's fight against the Earth Federation culminating in a terrorist attack on an Adelaide government conference.",
-  23: "A mystery surrounding a hidden truth that threatens to upend everything.",
-  24: "A slow-burn thriller about a passenger with a dangerous secret.",
-  25: "A high-octane action film following a group of outlaws on the run.",
-  26: "A young woman fighting to have her story heard in a world that won't listen.",
-  27: "A story about a group of friends who discover a terrifying place they can't escape.",
-  28: "A musical drama following an unlikely performer chasing a dream.",
-  29: "A horror sequel exploring new supernatural terrors.",
-  30: "Steven Spielberg's sci-fi spectacle about humanity's first undeniable proof of alien life, starring Emily Blunt, Josh O'Connor and Colin Firth.",
-  31: "A sports drama following a fighter who refuses to give up.",
-  32: "Hugh Jackman plays an older, injured vigilante reimagining of the classic outlaw hero in this action adventure.",
-  33: "Milly Alcock stars as Kara Zor-El travelling the galaxy with Krypto the Superdog on a quest for revenge, in DC Studios' second film directed by Craig Gillespie.",
-  34: "Steve Carell and Pierre Coffin return as Gru and the Minions take over 1920s Hollywood, accidentally unleashing real city-destroying monsters in this Illumination animated comedy.",
-  35: "A coming-of-age story set against the backdrop of a pivotal moment in history.",
-  36: "Young George Washington (William Franklyn-Miller) navigates early colonial America in this historical adventure featuring Ben Kingsley and Andy Serkis.",
-  37: "A comedian's rise to fame takes a dark and unexpected turn.",
-  38: "Dwayne Johnson returns as Maui alongside newcomer Catherine Laga'aia as Moana in Disney's live-action remake of the beloved 2016 animated film.",
-  39: "Tom Holland's Peter Parker returns as Spider-Man, teaming up with Bruce Banner and the Punisher to face a powerful new threat, directed by Destin Daniel Cretton.",
-  40: "A provocative drama about desire, power and the price of ambition.",
-  41: "A fast-paced action thriller set over a single high-stakes night.",
-  42: "The second chapter in the rebooted Super Troopers franchise, reuniting the original comedy troupe for more absurd law enforcement antics.",
-  43: "Matthew McConaughey stars as a bluegrass-playing Oklahoma honey maker whose empire comes under threat in this crime thriller co-starring Kurt Russell and Cole Sprouse.",
-  44: "Jason Statham stars as a man trying to clear his name and avenge his murdered billionaire boss in this action thriller.",
-  45: "Will Forte stars as a lawyer helping Wile E. Coyote sue the Acme Corporation for their faulty products in this long-awaited hybrid live-action animated comedy.",
-  46: "Jacob Elordi plays a pilot surviving in a post-apocalyptic world who follows a mysterious radio transmission in search of the last remnants of humanity, directed by Ridley Scott.",
-};
+function renderMovieScores() {
+  const today = new Date().toISOString().slice(0,10);
+  const totals = { Ruby: 0, Harri: 0 };
+  const counts = { Ruby: 0, Harri: 0 };
+  for (const m of MOVIES) {
+    if (m.date > today) continue;
+    const e = getEarnings(m);
+    if (e !== undefined && e > 0) {
+      totals[m.user] += e;
+      counts[m.user]++;
+    }
+  }
+  document.getElementById('ruby-earn').textContent  = fmtDollars(totals.Ruby)  || '$0';
+  document.getElementById('harri-earn').textContent = fmtDollars(totals.Harri) || '$0';
+  document.getElementById('ruby-sub').textContent   = counts.Ruby  + ' movie' + (counts.Ruby  !== 1 ? 's' : '') + ' earning';
+  document.getElementById('harri-sub').textContent  = counts.Harri + ' movie' + (counts.Harri !== 1 ? 's' : '') + ' earning';
+}
 
-const movieBioCache = {};
+function renderMovieChart() {
+  const canvas = document.getElementById('movies-chart');
+  if (!canvas) return;
 
-async function toggleMoviePopup(idx, row) {
-  const wrap = document.getElementById(`popup-${idx}`);
-  if (!wrap) return;
+  // Build chronological cumulative data
+  const sorted = [...MOVIES].sort((a,b) => a.date.localeCompare(b.date));
+  const today = new Date().toISOString().slice(0,10);
+  const labels = [];
+  const rubyData = [];
+  const harriData = [];
+  let rubyTotal = 0, harriTotal = 0;
+  let lastDate = '';
 
-  // close if already open
-  if (wrap.style.display !== 'none') {
-    wrap.style.display = 'none';
-    wrap.innerHTML = '';
-    return;
+  for (const m of sorted) {
+    if (m.date > today) continue;
+    const e = getEarnings(m);
+    if (e === undefined || e === 0) continue;
+    if (m.user === 'Ruby')  rubyTotal  += e;
+    if (m.user === 'Harri') harriTotal += e;
+    const label = m.date.slice(5).replace('-','/');
+    if (label !== lastDate) { labels.push(label); lastDate = label; }
+    else labels[labels.length-1] = label;
+    rubyData.push(rubyTotal);
+    harriData.push(harriTotal);
   }
 
-  // close any other open popups
-  document.querySelectorAll('.movie-popup-wrap').forEach(el => {
-    el.style.display = 'none'; el.innerHTML = '';
+  if (labels.length === 0) {
+    // No data yet — show placeholder
+    labels.push('May', 'Jun', 'Jul', 'Aug', 'Sep');
+    rubyData.push(0,0,0,0,0);
+    harriData.push(0,0,0,0,0);
+  }
+
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const gridCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+  const textCol = isDark ? '#a8a8a4' : '#9f9f9b';
+
+  if (movieChart) movieChart.destroy();
+  movieChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'Ruby',  data:rubyData,  borderColor:'#c0306a', backgroundColor:'rgba(192,48,106,0.08)', tension:0.3, pointRadius:3, borderWidth:2, fill:true },
+        { label:'Harri', data:harriData, borderColor:'#2060c0', backgroundColor:'rgba(32,96,192,0.08)',   tension:0.3, pointRadius:3, borderWidth:2, fill:true },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, events: [],
+      plugins: {
+        legend: { display:true, position:'top', labels:{ font:{size:11}, color:textCol, boxWidth:12, padding:10 } }
+      },
+      scales: {
+        x: { ticks:{ font:{size:10}, color:textCol }, grid:{ color:gridCol } },
+        y: {
+          ticks: {
+            font:{size:10}, color:textCol,
+            callback: v => v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : v >= 1e6 ? '$'+Math.round(v/1e6)+'M' : v >= 1e3 ? '$'+Math.round(v/1e3)+'K' : '$'+v
+          },
+          grid: { color:gridCol }
+        }
+      }
+    }
   });
-
-  const m = MOVIES[idx];
-  wrap.style.display = 'block';
-  const imdbLink = m.tt
-    ? `<a class="movie-popup-imdb" href="https://www.imdb.com/title/${m.tt}/" target="_blank">View on IMDb ↗</a>`
-    : '';
-
-  if (movieBioCache[idx]) {
-    wrap.innerHTML = `<div class="movie-popup">
-      <div class="movie-popup-title">${m.title}</div>
-      <div class="movie-popup-bio">${movieBioCache[idx]}</div>
-      ${imdbLink}
-    </div>`;
-    return;
-  }
-
-  wrap.innerHTML = `<div class="movie-popup">
-    <div class="movie-popup-title">${m.title}</div>
-    <div class="movie-popup-bio movie-popup-loading">Loading…</div>
-  </div>`;
-
-  try {
-    let bio = MOVIE_BIOS[idx] || null;
-
-    if (!bio) {
-      // AI fallback for movies we don't have a description for
-      const aiRes = await fetch('/api/recipe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ meal: `one sentence description of the 2026 film "${m.title}" — what it's about and who's in it. Plain text only.` })
-      });
-      const aiData = await aiRes.json();
-      bio = aiData.recipe?.trim() || aiData.text?.trim() || 'No description available.';
-    }
-
-    movieBioCache[idx] = bio;
-    wrap.innerHTML = `<div class="movie-popup">
-      <div class="movie-popup-title">${m.title}</div>
-      <div class="movie-popup-bio">${bio}</div>
-      ${imdbLink}
-    </div>`;
-  } catch {
-    wrap.innerHTML = `<div class="movie-popup">
-      <div class="movie-popup-bio movie-popup-loading">Couldn't load description.</div>
-    </div>`;
-  }
 }
 
-// ── WEATHER ──
-async function loadWeather() {
-  try {
-    const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=-41.2485&longitude=174.7633' +
-      '&current=temperature_2m,weathercode&daily=temperature_2m_max,precipitation_probability_max' +
-      '&timezone=Pacific%2FAuckland&forecast_days=1'
-    );
-    const d = await res.json();
-    const tempC = Math.round(d.current.temperature_2m);
-    const highC = Math.round(d.daily.temperature_2m_max[0]);
-    const rain  = d.daily.precipitation_probability_max[0];
-    const code  = d.current.weathercode;
-
-    const icon = code === 0 ? '☀️'
-      : code <= 2  ? '⛅'
-      : code <= 3  ? '☁️'
-      : code <= 49 ? '🌫️'
-      : code <= 67 ? '🌧️'
-      : code <= 77 ? '🌨️'
-      : code <= 82 ? '🌦️'
-      : code <= 99 ? '⛈️' : '🌡️';
-
-    document.getElementById('weather-icon').textContent = icon;
-    document.getElementById('weather-temp').innerHTML = `${tempC}°C<span>High ${highC}°C</span>`;
-
-    const rainEl = document.getElementById('weather-rain');
-    if (rain >= 50) {
-      rainEl.textContent = `🌧 Rain likely today (${rain}% chance)`;
-      rainEl.className = 'weather-rain yes';
-    } else if (rain >= 20) {
-      rainEl.textContent = `🌂 Possible rain (${rain}% chance)`;
-      rainEl.className = 'weather-rain yes';
-    } else {
-      rainEl.textContent = `✓ No rain expected (${rain}% chance)`;
-      rainEl.className = 'weather-rain no';
-    }
-  } catch {
-    document.getElementById('weather-rain').textContent = 'Weather unavailable';
-  }
-}
-loadWeather();
-
+// ── BUS MAP ──
 let busMap = null;
 let busMapOpen = false;
 let vehicleMarkers = [];
@@ -1397,7 +1325,6 @@ function toggleBusMap() {
   btn.textContent = busMapOpen ? '🗺 Hide map' : '🗺 Show map';
   if (busMapOpen) {
     initMap();
-    setTimeout(() => { if (busMap) busMap.invalidateSize(); }, 50);
     renderVehicles(lastVehicles);
   }
 }
@@ -1542,10 +1469,11 @@ function renderDepartures(departures, list, updated, vehicles) {
 
   // handle vehicles / map
   const mapBtn = document.getElementById('bus-map-btn');
-  // always show map button
-  mapBtn.style.display = 'block';
   if (vehicles && vehicles.length > 0) {
+    mapBtn.style.display = 'block';
     renderVehicles(vehicles);
+  } else {
+    mapBtn.style.display = 'none';
   }
 }
 
@@ -1634,8 +1562,5 @@ setInterval(() => {
 loadBusSettings();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>
-renderMovieScores(); renderMovieList(); fetchAllEarnings();
-</script>
 </body>
 </html>

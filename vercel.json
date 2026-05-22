@@ -5,6 +5,9 @@
     },
     "api/recipe.js": {
       "maxDuration": 15
+    },
+    "api/boxoffice.js": {
+      "maxDuration": 15
     }
   }
 }
