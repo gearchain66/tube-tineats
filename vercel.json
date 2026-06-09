@@ -8,6 +8,9 @@
     },
     "api/boxoffice.js": {
       "maxDuration": 15
+    },
+    "api/rfresults.js": {
+      "maxDuration": 15
     }
   }
 }

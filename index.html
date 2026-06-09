@@ -168,9 +168,7 @@ body {
 .score-card.harri .score-name { color:#2060c0; }
 .score-earn { font-size:22px; font-weight:800; letter-spacing:-1px; }
 .score-sub  { font-size:11px; color:var(--text2); margin-top:2px; }
-.movies-chart-wrap { padding:0.8rem 1rem 0; }
-.movies-chart-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text3); margin-bottom:6px; }
-#movies-chart { width:100%; height:120px; pointer-events:none; touch-action:pan-y; display:block; }
+
 .movies-filter { display:flex; gap:6px; flex-wrap:wrap; padding:0.75rem 1rem 0.5rem; align-items:center; }
 .mf-btn { padding:5px 12px; border-radius:20px; border:1.5px solid var(--border2); background:var(--bg); font-size:12px; font-weight:600; cursor:pointer; color:var(--text2); transition:.15s; }
 .mf-btn.active { background:var(--text); border-color:var(--text); color:var(--bg); }
@@ -198,6 +196,20 @@ body {
 .movies-footer { padding:0.5rem 1rem 0.9rem; display:flex; justify-content:space-between; align-items:center; }
 .movies-updated { font-size:11px; color:var(--text3); }
 .movies-note    { font-size:11px; color:var(--text3); text-align:right; }
+
+/* ── WEATHER ── */
+.weather-card { background:var(--bg); border-radius:var(--radius-lg); box-shadow:var(--shadow); overflow:hidden; margin-top:1rem; }
+.weather-inner { display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1rem; gap:10px; }
+.weather-left  { display:flex; align-items:center; gap:10px; }
+.weather-icon  { font-size:26px; line-height:1; }
+.weather-temp  { font-size:26px; font-weight:800; letter-spacing:-1px; }
+.weather-desc  { font-size:12px; color:var(--text2); margin-top:1px; }
+.weather-right { text-align:right; flex-shrink:0; }
+.weather-rain  { font-size:13px; font-weight:700; }
+.weather-rain.rain-yes { color:#185fa5; }
+.weather-rain.rain-no  { color:var(--green); }
+.weather-detail { font-size:11px; color:var(--text3); margin-top:2px; }
+.weather-updated { font-size:10px; color:var(--text3); padding:0 1rem 0.6rem; text-align:right; }
 
 /* ── ANIMATIONS ── */
 @keyframes bob        { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
@@ -576,6 +588,24 @@ body {
     </svg>
   </div>
 
+  <!-- WEATHER -->
+  <div class="weather-card" id="weather-card">
+    <div class="weather-inner">
+      <div class="weather-left">
+        <div class="weather-icon" id="wx-icon">⛅</div>
+        <div>
+          <div class="weather-temp" id="wx-temp">—°</div>
+          <div class="weather-desc" id="wx-desc">Loading weather…</div>
+        </div>
+      </div>
+      <div class="weather-right">
+        <div class="weather-rain" id="wx-rain"></div>
+        <div class="weather-detail" id="wx-detail"></div>
+      </div>
+    </div>
+    <div class="weather-updated" id="wx-updated"></div>
+  </div>
+
   <!-- BUS TRACKER -->
   <div class="card" style="margin-top:1rem;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1rem;">
@@ -640,10 +670,6 @@ body {
           <div class="score-sub" id="harri-sub">loading…</div>
         </div>
       </div>
-      <div class="movies-chart-wrap">
-        <div class="movies-chart-title">Cumulative domestic earnings over the summer</div>
-        <canvas id="movies-chart"></canvas>
-      </div>
       <div class="movies-filter">
         <button class="mf-btn active" onclick="filterMovies('all',this)">All</button>
         <button class="mf-btn ruby-f"  onclick="filterMovies('Ruby',this)">Ruby</button>
@@ -655,14 +681,13 @@ body {
       <div class="movies-list" id="movies-list"></div>
       <div class="movies-footer">
         <span class="movies-updated" id="movies-updated"></span>
-        <span class="movies-note">via Box Office Mojo</span>
+        <span class="movies-note">via regulationfan.com</span>
       </div>
     </div>
   </div>
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const DAYS = ['Sun','Mon','Tue','Wed','Thu'];
 
@@ -1023,6 +1048,69 @@ function switchTab(name) {
 // ── INIT ──
 save(); renderMeals(); renderWeek(); populateMealSelect();
 
+// ── WEATHER (Wellington, via Open-Meteo — no key needed) ──
+const WX_LAT = -41.2865;
+const WX_LNG = 174.7762;
+
+const WMO_ICONS = {
+  0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
+  45:'🌫️', 48:'🌫️',
+  51:'🌦️', 53:'🌦️', 55:'🌧️',
+  61:'🌧️', 63:'🌧️', 65:'🌧️',
+  71:'🌨️', 73:'🌨️', 75:'🌨️',
+  80:'🌦️', 81:'🌧️', 82:'⛈️',
+  95:'⛈️', 96:'⛈️', 99:'⛈️',
+};
+
+const WMO_DESC = {
+  0:'Clear sky', 1:'Mainly clear', 2:'Partly cloudy', 3:'Overcast',
+  45:'Fog', 48:'Icy fog',
+  51:'Light drizzle', 53:'Drizzle', 55:'Heavy drizzle',
+  61:'Light rain', 63:'Rain', 65:'Heavy rain',
+  71:'Light snow', 73:'Snow', 75:'Heavy snow',
+  80:'Showers', 81:'Heavy showers', 82:'Violent showers',
+  95:'Thunderstorm', 96:'Thunderstorm + hail', 99:'Thunderstorm + heavy hail',
+};
+
+async function fetchWeather() {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LNG}`
+      + `&current=temperature_2m,weathercode,precipitation,windspeed_10m`
+      + `&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min`
+      + `&timezone=Pacific%2FAuckland&forecast_days=1`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('weather api ' + res.status);
+    const d = await res.json();
+
+    const cur   = d.current;
+    const daily = d.daily;
+    const code  = cur.weathercode;
+    const temp  = Math.round(cur.temperature_2m);
+    const wind  = Math.round(cur.windspeed_10m);
+    const precip = daily.precipitation_sum?.[0] ?? 0;
+    const rainPct = daily.precipitation_probability_max?.[0] ?? 0;
+    const hi = Math.round(daily.temperature_2m_max?.[0] ?? temp);
+    const lo = Math.round(daily.temperature_2m_min?.[0] ?? temp);
+
+    document.getElementById('wx-icon').textContent = WMO_ICONS[code] ?? '🌡️';
+    document.getElementById('wx-temp').textContent = `${temp}°C`;
+    document.getElementById('wx-desc').textContent = (WMO_DESC[code] ?? 'Wellington') + ` · ${lo}–${hi}°`;
+
+    const rainEl = document.getElementById('wx-rain');
+    const willRain = rainPct >= 40 || precip >= 1;
+    rainEl.textContent = willRain ? `🌧 Rain likely (${rainPct}%)` : `☂️ No rain today`;
+    rainEl.className = 'weather-rain ' + (willRain ? 'rain-yes' : 'rain-no');
+
+    document.getElementById('wx-detail').textContent = `${precip.toFixed(1)} mm · ${wind} km/h wind`;
+    document.getElementById('wx-updated').textContent = 'Weather updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('wx-desc').textContent = 'Weather unavailable';
+  }
+}
+
+fetchWeather();
+setInterval(fetchWeather, 30 * 60 * 1000); // refresh every 30 min
+
 // ── MOVIES ──
 const MOVIES = [
   // Ruby's picks
@@ -1055,33 +1143,12 @@ const MOVIES = [
   { title:'Hokum',                      date:'2026-08-21', pts:2,  user:'Harri', tt:null },
 ];
 
-// Seed with confirmed earnings as of May 23 2026.
-// These get overwritten when a fresh fetch succeeds.
-const SEED = {
-  'tt17490712': 64872756,   // Mortal Kombat II — $64.9M (2 wks, BOM confirmed)
-  'tt29356163': 34500000,   // The Sheep Detectives — ~$34.5M (2 wks)
-  'tt11801096': 2200000,    // Is God Is — $2.2M opening wkd
-  'tt30825738': 12000000,   // Mandalorian & Grogu — previews only (opens this wkd)
-};
-
-let earningsCache = {};
 let earningsFetchedAt = 0;
 let moviesOpen = false;
 let movieFilter = 'all';
 let movieSort = 'date';
-let movieChart = null;
 
-// Restore from localStorage
-try {
-  const c = localStorage.getItem('rr-bo-v3');
-  const t = localStorage.getItem('rr-bo-v3-ts');
-  if (c) { earningsCache = JSON.parse(c); earningsFetchedAt = parseInt(t||'0'); }
-} catch(e) {}
-
-// Merge seed only for keys not already in cache
-for (const [tt, val] of Object.entries(SEED)) {
-  if (earningsCache[tt] === undefined) earningsCache[tt] = val;
-}
+// Restore from localStorage happens in fetchRegulationFan block below
 
 function toggleMovies() {
   moviesOpen = !moviesOpen;
@@ -1090,59 +1157,65 @@ function toggleMovies() {
   if (moviesOpen) {
     renderMovieScores();
     renderMovieList();
-    renderMovieChart();
     fetchAllEarnings();
   }
 }
 
-// ── FETCH via Vercel serverless ──
-async function fetchOneEarning(tt) {
-  try {
-    const res = await fetch(`/api/boxoffice?tt=${tt}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return (data.domestic !== undefined && data.domestic !== null) ? data.domestic : null;
-  } catch { return null; }
+// ── FETCH earnings from regulationfan.com results page ──
+let rfEarningsMap = {};   // title (normalised) → dollars
+
+function normTitle(t) {
+  return t.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-async function fetchAllEarnings(force = false) {
+async function fetchRegulationFan(force = false) {
   const age = Date.now() - earningsFetchedAt;
-  // Re-fetch if forced, or cache is older than 3 hours
-  if (!force && age < 3 * 60 * 60 * 1000 && Object.keys(earningsCache).length > 0) return;
+  if (!force && age < 3 * 60 * 60 * 1000 && Object.keys(rfEarningsMap).length > 0) return;
 
-  const tts = [...new Set(MOVIES.filter(m => m.tt).map(m => m.tt))];
-  let anyNew = false;
-
-  for (const tt of tts) {
-    const val = await fetchOneEarning(tt);
-    if (val !== null) {
-      earningsCache[tt] = val;
-      anyNew = true;
+  try {
+    const res = await fetch('/api/rfresults');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.results) {
+      rfEarningsMap = {};
+      for (const row of data.results) {
+        rfEarningsMap[normTitle(row.title)] = row.gross;
+      }
     }
-    // Update display as each comes in
-    renderMovieScores();
-    renderMovieList();
-    renderMovieChart();
+  } catch(e) {
+    console.warn('RF fetch failed', e);
   }
-
   earningsFetchedAt = Date.now();
   try {
-    localStorage.setItem('rr-bo-v3', JSON.stringify(earningsCache));
-    localStorage.setItem('rr-bo-v3-ts', String(earningsFetchedAt));
+    localStorage.setItem('rr-rf-v1', JSON.stringify(rfEarningsMap));
+    localStorage.setItem('rr-rf-v1-ts', String(earningsFetchedAt));
   } catch(e) {}
+}
 
+// Restore RF cache from localStorage
+try {
+  const c = localStorage.getItem('rr-rf-v1');
+  const t = localStorage.getItem('rr-rf-v1-ts');
+  if (c) { rfEarningsMap = JSON.parse(c); earningsFetchedAt = parseInt(t||'0'); }
+} catch(e) {}
+
+async function fetchAllEarnings(force = false) {
+  await fetchRegulationFan(force);
+  renderMovieScores();
+  renderMovieList();
   const el = document.getElementById('movies-updated');
   if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
 function refreshEarnings() {
+  rfEarningsMap = {};
   earningsFetchedAt = 0;
   fetchAllEarnings(true);
 }
 
 function getEarnings(movie) {
-  if (!movie.tt) return undefined; // no tt = not trackable
-  const v = earningsCache[movie.tt];
+  const key = normTitle(movie.title);
+  const v = rfEarningsMap[key];
   return v; // number or undefined
 }
 
@@ -1165,7 +1238,6 @@ function filterMovies(f, btn) {
   });
   btn.classList.add('active');
   renderMovieList();
-  renderMovieChart();
 }
 
 function sortMovies(by) {
@@ -1201,12 +1273,10 @@ function renderMovieList() {
     const earn = getEarnings(m);
     const released = m.date <= today;
     let earnHtml, earnClass;
-    if (!m.tt) {
-      earnHtml = '—'; earnClass = 'earn-none';
-    } else if (!released) {
+    if (!released) {
       earnHtml = '—'; earnClass = 'earn-none';
     } else if (earn === undefined) {
-      earnHtml = '…'; earnClass = 'earn-loading';
+      earnHtml = '—'; earnClass = 'earn-none';
     } else if (earn === 0) {
       earnHtml = '$0'; earnClass = 'earn-zero';
     } else {
@@ -1233,77 +1303,10 @@ function renderMovieScores() {
       totals[m.user] += e;
       counts[m.user]++;
     }
-  }
-  document.getElementById('ruby-earn').textContent  = fmtDollars(totals.Ruby)  || '$0';
+  }  document.getElementById('ruby-earn').textContent  = fmtDollars(totals.Ruby)  || '$0';
   document.getElementById('harri-earn').textContent = fmtDollars(totals.Harri) || '$0';
   document.getElementById('ruby-sub').textContent   = counts.Ruby  + ' movie' + (counts.Ruby  !== 1 ? 's' : '') + ' earning';
   document.getElementById('harri-sub').textContent  = counts.Harri + ' movie' + (counts.Harri !== 1 ? 's' : '') + ' earning';
-}
-
-function renderMovieChart() {
-  const canvas = document.getElementById('movies-chart');
-  if (!canvas) return;
-
-  // Build chronological cumulative data
-  const sorted = [...MOVIES].sort((a,b) => a.date.localeCompare(b.date));
-  const today = new Date().toISOString().slice(0,10);
-  const labels = [];
-  const rubyData = [];
-  const harriData = [];
-  let rubyTotal = 0, harriTotal = 0;
-  let lastDate = '';
-
-  for (const m of sorted) {
-    if (m.date > today) continue;
-    const e = getEarnings(m);
-    if (e === undefined || e === 0) continue;
-    if (m.user === 'Ruby')  rubyTotal  += e;
-    if (m.user === 'Harri') harriTotal += e;
-    const label = m.date.slice(5).replace('-','/');
-    if (label !== lastDate) { labels.push(label); lastDate = label; }
-    else labels[labels.length-1] = label;
-    rubyData.push(rubyTotal);
-    harriData.push(harriTotal);
-  }
-
-  if (labels.length === 0) {
-    // No data yet — show placeholder
-    labels.push('May', 'Jun', 'Jul', 'Aug', 'Sep');
-    rubyData.push(0,0,0,0,0);
-    harriData.push(0,0,0,0,0);
-  }
-
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const gridCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
-  const textCol = isDark ? '#a8a8a4' : '#9f9f9b';
-
-  if (movieChart) movieChart.destroy();
-  movieChart = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label:'Ruby',  data:rubyData,  borderColor:'#c0306a', backgroundColor:'rgba(192,48,106,0.08)', tension:0.3, pointRadius:3, borderWidth:2, fill:true },
-        { label:'Harri', data:harriData, borderColor:'#2060c0', backgroundColor:'rgba(32,96,192,0.08)',   tension:0.3, pointRadius:3, borderWidth:2, fill:true },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, events: [],
-      plugins: {
-        legend: { display:true, position:'top', labels:{ font:{size:11}, color:textCol, boxWidth:12, padding:10 } }
-      },
-      scales: {
-        x: { ticks:{ font:{size:10}, color:textCol }, grid:{ color:gridCol } },
-        y: {
-          ticks: {
-            font:{size:10}, color:textCol,
-            callback: v => v >= 1e9 ? '$'+(v/1e9).toFixed(1)+'B' : v >= 1e6 ? '$'+Math.round(v/1e6)+'M' : v >= 1e3 ? '$'+Math.round(v/1e3)+'K' : '$'+v
-          },
-          grid: { color:gridCol }
-        }
-      }
-    }
-  });
 }
 
 // ── BUS MAP ──
