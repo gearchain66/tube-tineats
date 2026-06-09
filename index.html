@@ -1112,35 +1112,36 @@ fetchWeather();
 setInterval(fetchWeather, 30 * 60 * 1000); // refresh every 30 min
 
 // ── MOVIES ──
+// slug = the-numbers.com URL slug e.g. "Mortal-Kombat-II-(2026)"
 const MOVIES = [
   // Ruby's picks
-  { title:'Is God Is',                  date:'2026-05-15', pts:1,  user:'Ruby',  tt:'tt11801096' },
-  { title:'I Love Boosters',            date:'2026-05-22', pts:3,  user:'Ruby',  tt:null },
-  { title:'The Mandalorian & Grogu',    date:'2026-05-22', pts:15, user:'Ruby',  tt:'tt30825738' },
-  { title:'Tuner',                      date:'2026-05-29', pts:5,  user:'Ruby',  tt:null },
-  { title:'Pressure',                   date:'2026-05-29', pts:2,  user:'Ruby',  tt:null },
-  { title:'Masters of the Universe',    date:'2026-06-05', pts:3,  user:'Ruby',  tt:'tt0291230'  },
-  { title:'Toy Story 5',                date:'2026-06-19', pts:16, user:'Ruby',  tt:'tt29355505' },
-  { title:'Jackass 5',                  date:'2026-06-26', pts:7,  user:'Ruby',  tt:'tt39316472' },
-  { title:'The Invite',                 date:'2026-06-26', pts:3,  user:'Ruby',  tt:null },
-  { title:'The Odyssey',                date:'2026-07-17', pts:15, user:'Ruby',  tt:'tt14039722' },
-  { title:'Cut Off',                    date:'2026-07-17', pts:1,  user:'Ruby',  tt:null },
-  { title:'Spider-Man: Brand New Day',  date:'2026-07-24', pts:14, user:'Ruby',  tt:'tt22084616' },
-  { title:'Moana',                      date:'2026-07-31', pts:4,  user:'Ruby',  tt:null },
-  { title:'Backrooms',                  date:'2026-08-07', pts:3,  user:'Ruby',  tt:null },
-  { title:'Beetlejuice Beetlejuice 2',  date:'2026-09-05', pts:2,  user:'Ruby',  tt:null },
+  { title:'Is God Is',                  date:'2026-05-15', pts:1,  user:'Ruby',  slug:'Is-God-Is-(2026)' },
+  { title:'I Love Boosters',            date:'2026-05-22', pts:3,  user:'Ruby',  slug:null },
+  { title:'The Mandalorian & Grogu',    date:'2026-05-22', pts:15, user:'Ruby',  slug:'Star-Wars-The-Mandalorian-and-Grogu-(2026)' },
+  { title:'Tuner',                      date:'2026-05-29', pts:5,  user:'Ruby',  slug:null },
+  { title:'Pressure',                   date:'2026-05-29', pts:2,  user:'Ruby',  slug:'Pressure-(2026)' },
+  { title:'Masters of the Universe',    date:'2026-06-05', pts:3,  user:'Ruby',  slug:'Masters-of-the-Universe-(2026)' },
+  { title:'Toy Story 5',                date:'2026-06-19', pts:16, user:'Ruby',  slug:'Toy-Story-5-(2026)' },
+  { title:'Jackass 5',                  date:'2026-06-26', pts:7,  user:'Ruby',  slug:'Jackass-5-(2026)' },
+  { title:'The Invite',                 date:'2026-06-26', pts:3,  user:'Ruby',  slug:null },
+  { title:'The Odyssey',                date:'2026-07-17', pts:15, user:'Ruby',  slug:'The-Odyssey-(2026)' },
+  { title:'Cut Off',                    date:'2026-07-17', pts:1,  user:'Ruby',  slug:null },
+  { title:'Spider-Man: Brand New Day',  date:'2026-07-24', pts:14, user:'Ruby',  slug:'Spider-Man-Brand-New-Day-(2026)' },
+  { title:'Moana',                      date:'2026-07-31', pts:4,  user:'Ruby',  slug:'Moana-(2026)' },
+  { title:'Backrooms',                  date:'2026-08-07', pts:3,  user:'Ruby',  slug:null },
+  { title:'Beetlejuice Beetlejuice 2',  date:'2026-09-05', pts:2,  user:'Ruby',  slug:'Beetlejuice-Beetlejuice-2-(2026)' },
   // Harri's picks
-  { title:'Mortal Kombat II',           date:'2026-05-08', pts:8,  user:'Harri', tt:'tt17490712' },
-  { title:'The Sheep Detectives',       date:'2026-05-08', pts:6,  user:'Harri', tt:'tt29356163' },
-  { title:'The Breadwinner',            date:'2026-05-29', pts:3,  user:'Harri', tt:null },
-  { title:'Scary Movie 6',              date:'2026-06-05', pts:5,  user:'Harri', tt:null },
-  { title:'Disclosure Day',             date:'2026-06-12', pts:7,  user:'Harri', tt:'tt15047880' },
-  { title:'Amazing Digital Circus',     date:'2026-06-05', pts:4,  user:'Harri', tt:null },
-  { title:'Supergirl: Woman of Tomorrow',date:'2026-06-26', pts:6, user:'Harri', tt:null },
-  { title:'Gundam',                     date:'2026-07-10', pts:3,  user:'Harri', tt:'tt32915652' },
-  { title:'PAW Patrol: Dino Rescue',    date:'2026-07-31', pts:4,  user:'Harri', tt:null },
-  { title:'Minions & Monsters',         date:'2026-08-14', pts:5,  user:'Harri', tt:null },
-  { title:'Hokum',                      date:'2026-08-21', pts:2,  user:'Harri', tt:null },
+  { title:'Mortal Kombat II',           date:'2026-05-08', pts:8,  user:'Harri', slug:'Mortal-Kombat-II-(2026)' },
+  { title:'The Sheep Detectives',       date:'2026-05-08', pts:6,  user:'Harri', slug:'Sheep-Detectives-The-(2026)' },
+  { title:'The Breadwinner',            date:'2026-05-29', pts:3,  user:'Harri', slug:null },
+  { title:'Scary Movie 6',              date:'2026-06-05', pts:5,  user:'Harri', slug:'Scary-Movie-6-(2026)' },
+  { title:'Disclosure Day',             date:'2026-06-12', pts:7,  user:'Harri', slug:'Disclosure-Day-(2026)' },
+  { title:'Amazing Digital Circus',     date:'2026-06-05', pts:4,  user:'Harri', slug:'Amazing-Digital-Circus-(2026)' },
+  { title:'Supergirl: Woman of Tomorrow',date:'2026-06-26', pts:6, user:'Harri', slug:'Supergirl-Woman-of-Tomorrow-(2026)' },
+  { title:'Gundam',                     date:'2026-07-10', pts:3,  user:'Harri', slug:'Gundam-(2026)' },
+  { title:'PAW Patrol: Dino Rescue',    date:'2026-07-31', pts:4,  user:'Harri', slug:'PAW-Patrol-Dino-Rescue-(2026)' },
+  { title:'Minions & Monsters',         date:'2026-08-14', pts:5,  user:'Harri', slug:null },
+  { title:'Hokum',                      date:'2026-08-21', pts:2,  user:'Harri', slug:null },
 ];
 
 let earningsFetchedAt = 0;
@@ -1148,7 +1149,7 @@ let moviesOpen = false;
 let movieFilter = 'all';
 let movieSort = 'date';
 
-// Restore from localStorage happens in fetchRegulationFan block below
+// Restore from localStorage happens in fetchAllEarnings block below
 
 function toggleMovies() {
   moviesOpen = !moviesOpen;
@@ -1161,62 +1162,56 @@ function toggleMovies() {
   }
 }
 
-// ── FETCH earnings from regulationfan.com results page ──
-let rfEarningsMap = {};   // title (normalised) → dollars
+// ── FETCH earnings from The Numbers (server-rendered HTML, no JS needed) ──
+let earningsCache = {};  // slug → dollars
 
-function normTitle(t) {
-  return t.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-async function fetchRegulationFan(force = false) {
-  const age = Date.now() - earningsFetchedAt;
-  if (!force && age < 3 * 60 * 60 * 1000 && Object.keys(rfEarningsMap).length > 0) return;
-
+async function fetchOneEarning(slug) {
   try {
-    const res = await fetch('/api/rfresults');
-    if (!res.ok) return;
+    const res = await fetch(`/api/boxoffice?slug=${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
     const data = await res.json();
-    if (data.results) {
-      rfEarningsMap = {};
-      for (const row of data.results) {
-        rfEarningsMap[normTitle(row.title)] = row.gross;
-      }
-    }
-  } catch(e) {
-    console.warn('RF fetch failed', e);
-  }
-  earningsFetchedAt = Date.now();
-  try {
-    localStorage.setItem('rr-rf-v1', JSON.stringify(rfEarningsMap));
-    localStorage.setItem('rr-rf-v1-ts', String(earningsFetchedAt));
-  } catch(e) {}
+    return (data.domestic !== undefined && data.domestic !== null) ? data.domestic : null;
+  } catch { return null; }
 }
-
-// Restore RF cache from localStorage
-try {
-  const c = localStorage.getItem('rr-rf-v1');
-  const t = localStorage.getItem('rr-rf-v1-ts');
-  if (c) { rfEarningsMap = JSON.parse(c); earningsFetchedAt = parseInt(t||'0'); }
-} catch(e) {}
 
 async function fetchAllEarnings(force = false) {
-  await fetchRegulationFan(force);
-  renderMovieScores();
-  renderMovieList();
+  const age = Date.now() - earningsFetchedAt;
+  if (!force && age < 3 * 60 * 60 * 1000 && Object.keys(earningsCache).length > 0) return;
+
+  const slugs = [...new Set(MOVIES.filter(m => m.slug).map(m => m.slug))];
+  for (const slug of slugs) {
+    const val = await fetchOneEarning(slug);
+    if (val !== null) earningsCache[slug] = val;
+    renderMovieScores();
+    renderMovieList();
+  }
+
+  earningsFetchedAt = Date.now();
+  try {
+    localStorage.setItem('rr-tn-v1', JSON.stringify(earningsCache));
+    localStorage.setItem('rr-tn-v1-ts', String(earningsFetchedAt));
+  } catch(e) {}
+
   const el = document.getElementById('movies-updated');
   if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 
+// Restore cache from localStorage
+try {
+  const c = localStorage.getItem('rr-tn-v1');
+  const t = localStorage.getItem('rr-tn-v1-ts');
+  if (c) { earningsCache = JSON.parse(c); earningsFetchedAt = parseInt(t||'0'); }
+} catch(e) {}
+
 function refreshEarnings() {
-  rfEarningsMap = {};
+  earningsCache = {};
   earningsFetchedAt = 0;
   fetchAllEarnings(true);
 }
 
 function getEarnings(movie) {
-  const key = normTitle(movie.title);
-  const v = rfEarningsMap[key];
-  return v; // number or undefined
+  if (!movie.slug) return undefined;
+  return earningsCache[movie.slug];
 }
 
 function fmtDollars(n) {
